@@ -4,3 +4,7 @@ __pycache__
 htmlcov
 .venv
 data
+nuitka-crash-report.xml
+pysidedeploy.spec
+deployment
+Blocky Dungeon Mapper.exe

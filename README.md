@@ -17,6 +17,15 @@
 
 ## Projektista
 
+### Käynnistys
+1. Asenna riippuvuudet: `poetry install`
+2. Suorita lähteestä: `poetry run invoke start`
+
+## Paketointi
+1. Asenna riippuvuudet: `poetry install`
+    - Windowsilla varmista, että `dumpbin` on saatavilla.
+2. Paketoi: `poetry run invoke build`
+
 ### Kehitysympäristö
 **Käyttöönotto**
 1. Luo venv `poetry install`

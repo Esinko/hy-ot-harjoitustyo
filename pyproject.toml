@@ -13,6 +13,9 @@ dependencies = [
     "pyside6 (>=6.8.3,<7.0.0)"
 ]
 
+[tool.poetry]
+package-mode = false
+
 [tool.poetry.dependencies]
 python = ">=3.10,<3.13"
 
@@ -20,8 +23,12 @@ python = ">=3.10,<3.13"
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
 
+[tool.pytest.ini_options]
+addopts = "--ignore=laskarit"
+
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.5"
+coverage = "^7.7.1"
 
 [virtualenvs]
 in-project = true

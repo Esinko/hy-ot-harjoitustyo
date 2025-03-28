@@ -6,11 +6,11 @@ from subprocess import call, check_output
 def coverage(ctx):
     ctx.run("coverage run --branch -m pytest")
 
-@task()
+@task(coverage)
 def coverage_report(ctx):
     ctx.run("coverage html")
     if platform == "win32":
-        call(("start", "htmlcov/index.html"))
+        call(("start", "./htmlcov/index.html"), shell=True)
     else:
         call(("xdg-open", "htmlcov/index.html"))
 

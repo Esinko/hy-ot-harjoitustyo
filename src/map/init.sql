@@ -1,0 +1,1 @@
+INSERT INTO Meta (id, name) VALUES (1, "Unnamed Map")

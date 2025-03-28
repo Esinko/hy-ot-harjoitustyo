@@ -1,14 +1,14 @@
 from invoke import task
 from sys import platform
-from subprocess import call
+from subprocess import call, check_output
 
 @task
 def coverage(ctx):
-    ctx.run("coverage run --branch -m pytest", pty=True)
+    ctx.run("coverage run --branch -m pytest")
 
 @task()
 def coverage_report(ctx):
-    ctx.run("coverage html", pty=True)
+    ctx.run("coverage html")
     if platform == "win32":
         call(("start", "htmlcov/index.html"))
     else:
@@ -16,8 +16,8 @@ def coverage_report(ctx):
 
 @task
 def test(ctx):
-    ctx.run("pytest src", pty=True)
+    ctx.run("pytest src")
 
 @task
 def start(ctx):
-    ctx.run("python3 src/index.py", pty=True)
+    ctx.run(f"cd ./src && poetry run python index.py")

@@ -29,9 +29,8 @@ class BaseWindow(QtWidgets.QWidget):
             map_store.create_map(name, f"{uuid4()}.dmap")
             self.change_view("select_map") # TODO: Change to editor
 
-    def _delete_map(self, map: Map):
-        map.close()
-        map.map_file.unlink()
+    def _delete_map(self, map: Map, map_store: MapStore):
+        map_store.delete_map(map)
         self.change_view("select_map")
 
     def clear_window(self):
@@ -93,7 +92,7 @@ class BaseWindow(QtWidgets.QWidget):
         self.layout.addWidget(name_input, alignment=QtCore.Qt.AlignmentFlag.AlignCenter)
         self.layout.addLayout(button_row)
 
-    def open_delete_view(self, map: Map):
+    def open_delete_view(self, map: Map, map_store: MapStore):
         # Change to vertical layout
         self.clear_window()
         self.layout = QtWidgets.QVBoxLayout()
@@ -112,7 +111,7 @@ class BaseWindow(QtWidgets.QWidget):
 
         # Delete button
         delete_button = QtWidgets.QPushButton("Delete")
-        delete_button.clicked.connect(lambda: self._delete_map(map))
+        delete_button.clicked.connect(lambda: self._delete_map(map, map_store))
         
         # Cancel button 
         cancel_button = QtWidgets.QPushButton("Cancel")
@@ -222,7 +221,7 @@ class Application:
             self.window.open_create_view(self.map_store)
         elif view_name == "delete_map":
             map_to_delete = self.map_store.list(no_refresh=True)[option]
-            self.window.open_delete_view(map_to_delete)
+            self.window.open_delete_view(map_to_delete, self.map_store)
 
     # Open the main window
     def open(self, width: int = 800, height: int = 600):

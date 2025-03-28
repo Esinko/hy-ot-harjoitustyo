@@ -3,13 +3,6 @@ from typing import List, Tuple, Any, TypedDict
 from sqlite3 import Connection, connect, Cursor
 from map.sql import sql_table
 
-# Init and schema for maps
-schema_file = Path("./map/schema.sql")
-init_file = Path("./map/init.sql")
-
-if not init_file.exists() or not schema_file.exists():
-    raise Exception("Map init or schema missing!")
-
 # Standard asset in the map
 class Asset:
     id: int
@@ -128,10 +121,20 @@ class Map:
 class MapStore:
     store_folder: Path
     _maps: List[Map]
+    schema_file: Path
+    init_file: Path
 
-    def __init__(self, path: str):
+    def __init__(self, path: str, init_path: str | None = None, schema_path: str | None = None):
         self.store_folder = Path(path)
         self._maps = []
+
+        # Init and schema for maps
+        self.schema_file = Path(schema_path if schema_path else  "./map/schema.sql")
+        self.init_file = Path(init_path if init_path else "./map/init.sql")
+
+        if not self.init_file.exists() or not self.schema_file.exists():
+            raise Exception("Map init or schema missing!")
+
 
         # Check that the store exists
         # and that it is a directory
@@ -165,6 +168,12 @@ class MapStore:
 
         return self._maps
     
+    # Close the store
+    def close(self):
+        # Close old connections
+        for map in self._maps:
+            map.close()
+    
     # Create a new map
     def create_map(self, name: str, filename: str) -> Map:
         # Make sure file-ending is right
@@ -177,12 +186,12 @@ class MapStore:
             raise Exception("Map already exists.")
         
         # Create the file
-        schema = schema_file.read_text()
+        schema = self.schema_file.read_text()
         connection = connect(new_map_file)
         connection.executescript(schema)
 
         # Do the db init too
-        init = init_file.read_text()
+        init = self.init_file.read_text()
         connection.executescript(init)
 
         # Create map and set name
@@ -193,4 +202,9 @@ class MapStore:
         connection.commit()
         
         return new_map
+    
+    # Delete a map
+    def delete_map(self, map: Map):
+        map.close()
+        map.map_file.unlink()
     

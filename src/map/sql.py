@@ -38,7 +38,17 @@ sql_table = {
 
     "create_element": "INSERT INTO Elements (name, x, y, width, height) VALUES (?, ?, ?, ?, ?);",
 
-    "edit_element": "UPDATE Elements SET name = ?, x = ?, y = ?, width = ?, height = ?, background_image = ?, background_color = ? WHERE id = ?",
+    "edit_element": """
+        UPDATE Elements SET
+            name = ?,
+            x = ?,
+            y = ?,
+            width = ?,
+            height = ?,
+            background_image = ?,
+            background_color = ?
+        WHERE id = ?
+    """,
 
     "element_exists": "SELECT EXISTS (SELECT id FROM Elements WHERE id = ?)"
 }

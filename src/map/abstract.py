@@ -36,14 +36,27 @@ class Element:
     background_image: Asset | None
     background_color: str | None
 
-    def __init__(self, id: int, name: str, x: int, y: int, width: int, height: int, background_image_id: int | None, background_image_name: int | None, background_image_data: bytes | None, background_color: str | None):
+    def __init__(self,
+                id: int, # pylint: disable=redefined-builtin
+                name: str,
+                x: int,
+                y: int,
+                width: int,
+                height: int,
+                background_image_id: int | None,
+                background_image_name: int | None,
+                background_image_data: bytes | None,
+                background_color: str | None
+    ):
         self.id = id
         self.name = name
         self.x = x
         self.y = y
         self.width = width
         self.height = height
-        self.background_image = Asset(background_image_id, background_image_name, background_image_data) if background_image_id else None
+        self.background_image = Asset(background_image_id,
+                                      background_image_name,
+                                      background_image_data) if background_image_id else None
         self.background_color = background_color
 
     def to_dict(self) -> ElementEditable:
@@ -112,7 +125,7 @@ class Map:
     def open(self):
         # Make sure we can open the map
         if not self.map_file or not self.map_file.exists():
-            raise Exception("Map file missing or location uninitialized.")
+            raise FileNotFoundError("Map file missing or location uninitialized.")
         if self._connection:
             raise Exception("Map already open.")
         
@@ -121,7 +134,7 @@ class Map:
         # Read the name of the map
         [result], _ = self._query(query=sql_table["get_name"], limit=1)
         if not result:
-            raise Exception("Unable to read map Meta table.")
+            raise IOError("Unable to read map Meta table.")
         self.name = result[0]
 
     # Set the map name
@@ -135,24 +148,25 @@ class Map:
         elements_raw, _ = self._query(query=sql_table["get_elements"])
         return [Element(*result) for result in elements_raw]
     
-    def get_element(self, id: int) -> Element | None:
-        [element_raw], _ = self._query(query=sql_table["get_element"], parameters=(id,))
+    def get_element(self, element_id: int) -> Element | None:
+        [element_raw], _ = self._query(query=sql_table["get_element"], parameters=(element_id,))
         return Element(*element_raw) if element_raw else None
     
     # Create an element on the map
     def create_element(self, element_editable: ElementEditable) -> Element:
-        _, id = self._execute(query=sql_table["create_element"], parameters=(element_editable["name"],
+        _, element_id = self._execute(query=sql_table["create_element"], parameters=(element_editable["name"],
                                                                            element_editable["x"],
                                                                            element_editable["y"],
                                                                            element_editable["width"],
                                                                            element_editable["height"]))
-        createdElement = self.get_element(id)
-        if self._on_change: self._on_change()
-        return createdElement
+        created_element = self.get_element(element_id)
+        if self._on_change:
+            self._on_change()
+        return created_element
     
     # Check if a element with a given id exists
-    def element_exists(self, id: int) -> bool:
-        [[result]], _ = self._query(query=sql_table["element_exists"], parameters=(id,))
+    def element_exists(self, element_id: int) -> bool:
+        [[result]], _ = self._query(query=sql_table["element_exists"], parameters=(element_id,))
         return result == 1
     
     # Edit an element on the map
@@ -169,7 +183,8 @@ class Map:
                                                                    element_editable["background_image"].id if element_editable["background_image"] else None,
                                                                    element_editable["background_color"],
                                                                    element_id))
-        if self._on_change: self._on_change()
+        if self._on_change:
+            self._on_change()
         return self.get_element(element_editable["id"]) # NOTE: Id can be changed, technically
         
     
@@ -191,7 +206,7 @@ class MapStore:
         self.init_file = Path(init_path if init_path else "./map/init.sql")
 
         if not self.init_file.exists() or not self.schema_file.exists():
-            raise Exception("Map init or schema missing!")
+            raise FileNotFoundError("Map init or schema missing!")
 
 
         # Check that the store exists
@@ -199,7 +214,7 @@ class MapStore:
         if not self.store_folder.exists():
             self.store_folder.mkdir()
         elif self.store_folder.exists() and not self.store_folder.is_dir():
-            raise Exception("Store location must be a directory.")
+            raise NotADirectoryError("Store location must be a directory.")
 
     # Get all the maps in the store
     def list(self, no_refresh: bool = False) -> List[Map]:
@@ -208,8 +223,8 @@ class MapStore:
             return self._maps
 
         # Close old connections
-        for map in self._maps:
-            map.close()
+        for a_map in self._maps:
+            a_map.close()
 
         # Get all maps
         self._maps = []
@@ -217,10 +232,10 @@ class MapStore:
             if map_file.is_file() and map_file.name.endswith(".dmap"):
                 # Attempt to open map
                 try:
-                    map = Map(map_file)
-                    map.open()
-                    self._maps.append(map)
-                except Exception as err:
+                    opened_map = Map(map_file)
+                    opened_map.open()
+                    self._maps.append(opened_map)
+                except Exception:
                     # TODO: We discard exceptions for now. Should we log a warning?
                     pass
 
@@ -229,8 +244,8 @@ class MapStore:
     # Close the store
     def close(self):
         # Close old connections
-        for map in self._maps:
-            map.close()
+        for a_map in self._maps:
+            a_map.close()
     
     # Create a new map
     def create_map(self, name: str, filename: str) -> Map:
@@ -241,15 +256,15 @@ class MapStore:
         # Make sure file does not exist
         new_map_file = self.store_folder / filename
         if new_map_file.exists():
-            raise Exception("Map already exists.")
+            raise FileExistsError("Map already exists!")
         
         # Create the file
-        schema = self.schema_file.read_text()
+        schema = self.schema_file.read_text("utf8")
         connection = connect(new_map_file)
         connection.executescript(schema)
 
         # Do the db init too
-        init = self.init_file.read_text()
+        init = self.init_file.read_text("utf8")
         connection.executescript(init)
 
         # Create map and set name
@@ -262,7 +277,7 @@ class MapStore:
         return new_map
     
     # Delete a map
-    def delete_map(self, map: Map):
-        map.close()
-        map.map_file.unlink()
+    def delete_map(self, target_map: Map):
+        target_map.close()
+        target_map.map_file.unlink()
     

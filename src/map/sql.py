@@ -18,5 +18,23 @@ sql_table = {
             Elements.background_color AS background_image_color
         FROM Elements
         LEFT JOIN Assets ON Elements.background_image = Assets.id;
-    """
+    """,
+    "get_element": """
+        SELECT
+            Elements.id,
+            Elements.name,
+            Elements.x,
+            Elements.y,
+            Elements.width,
+            Elements.height,
+            Elements.background_image AS background_image_id,
+            Assets.name AS background_image_name,
+            Assets.value AS background_image_data,
+            Elements.background_color AS background_image_color
+        FROM Elements
+        LEFT JOIN Assets ON Elements.background_image = Assets.id
+        WHERE Elements.id = ?;
+    """,
+
+    "create_element": "INSERT Elements (name, x, y, width, height) VALUES (?, ?, ?, ?, ?)"
 }

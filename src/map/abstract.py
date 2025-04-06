@@ -1,7 +1,9 @@
 from pathlib import Path
 from typing import List, Tuple, Any, TypedDict
+from typing_extensions import Omit
 from sqlite3 import Connection, connect, Cursor
 from map.sql import sql_table
+from src.map import sql
 
 # Standard asset in the map
 class Asset:
@@ -36,6 +38,7 @@ class Element:
         self.background_color = background_color
 
 class ElementEditable(TypedDict):
+    id: int
     name: str
     x: int
     y: int
@@ -79,8 +82,9 @@ class Map:
         cursor = self._connection.cursor()
         cursor.execute(query, parameters)
         results = cursor.fetchmany(limit)
+        last_inserted_id = cursor.lastrowid
         cursor.close()
-        return results
+        return results, last_inserted_id
 
     # Open the map file
     def open(self):
@@ -106,12 +110,18 @@ class Map:
     
     # Get all the elements
     def get_elements(self) -> List[Element]:
-        elements_raw = self._query(query=sql_table["get_elements"])
-        return [ Element(*result) for result in elements_raw ]
+        [elements_raw] = self._query(query=sql_table["get_elements"])
+        return [Element(*result) for result in elements_raw]
+    
+    def get_element(self, id: int) -> Element | None:
+        [element_raw] = self._query(query=sql_table["get_element"], parameters=(id,))
+        return Element(*element_raw) if element_raw else None
     
     # Create an element on the map
     def create_element(self, element_editable: ElementEditable) -> Element:
-        pass
+        _, id = self._query(query=sql_table["create_element"], parameters=(element_editable[""]))
+        createdElement = self.get_element(id)
+        return Element(*createdElement)
     
     # Edit an element on the map
     def edit_element(self, element_id: int, element_editable: ElementEditable) -> Element:

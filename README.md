@@ -21,15 +21,20 @@
 1. Asenna riippuvuudet: `poetry install`
 2. Suorita lähteestä: `poetry run invoke start`
 
+**Poetry:n asennus tarvittaessa**
+
+`pipx install poetry`
+
 ## Paketointi
 1. Asenna riippuvuudet: `poetry install`
     - Windowsilla varmista, että `dumpbin` on saatavilla.
 2. Paketoi: `poetry run invoke build`
 
 ### Kehitysympäristö
+
 **Käyttöönotto**
 1. Luo venv `poetry install`
-2. Aktivoi venv `poetry env activate` -> `"./.venv/Scripts/activate.bat"`
+2. Aktivoi venv `poetry env activate` -> `"./.venv/Scripts/activate"`
 3. Aseta VSCodessa suositeltu Python interpreter (korjaa kirjastotyypitykset)
 
 **Update checklist**

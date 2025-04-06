@@ -3,8 +3,10 @@ from sys import exit
 from typing import List, TypedDict, Literal, Callable, Any
 from map.abstract import MapStore, Map
 from uuid import uuid4
+from ui.components.editor import EditorGraphicsView
+from ui.components.buttons import AddElementButtonWidget, StandardButtonWidget, DeleteButtonWidget
 
-views = Literal["select_map", "create_map", "delete_map"]
+views = Literal["select_map", "create_map", "delete_map", "edit_map"]
 view_changer = Callable[[views, Any], None]
 
 class SelectOption(TypedDict):
@@ -23,7 +25,6 @@ class BaseWindow(QtWidgets.QWidget):
         self.layout = QtWidgets.QVBoxLayout(self)
         self.layout.addWidget(QtWidgets.QLabel("Loading ...", alignment=QtCore.Qt.AlignCenter))
     
-    
     def _create_map(self, map_store: MapStore, name: str):
         if len(name) > 0:
             map_store.create_map(name, f"{uuid4()}.dmap")
@@ -32,6 +33,21 @@ class BaseWindow(QtWidgets.QWidget):
     def _delete_map(self, map: Map, map_store: MapStore):
         map_store.delete_map(map)
         self.change_view("select_map")
+
+    def _create_element(self, map: Map, x: int, y: int):
+        map.create_element({
+            "name": "Unnamed Tile",
+            "x": x,
+            "y": y,
+            "width": 1,
+            "height": 1
+        })
+
+    def _move_element(self, map: Map, id: int, x: int, y: int):
+        edited_element = map.get_element(id).to_dict()
+        edited_element["x"] = x
+        edited_element["y"] = y
+        map.edit_element(id, edited_element)
 
     def clear_window(self):
         old_layout = self.layout
@@ -55,6 +71,71 @@ class BaseWindow(QtWidgets.QWidget):
 
         # Now detach old layout
         QtWidgets.QWidget().setLayout(old_layout)
+
+    def open_editor_view(self, map: Map, map_store: MapStore):
+        # Change to vertical layout
+        self.clear_window()
+        self.layout = QtWidgets.QVBoxLayout()
+        self.layout.setContentsMargins(0, 0, 0, 0)
+        self.setLayout(self.layout)
+        self.layout.setSpacing(0)
+
+        # Create top row
+        top_bar = QtWidgets.QWidget()
+        top_bar.setStyleSheet("background-color: #686868")
+        top_bar.setFixedHeight(32)
+        top_bar_layout = QtWidgets.QHBoxLayout(top_bar)
+        top_bar_layout.setContentsMargins(5, 3, 5, 8)
+        top_bar_layout.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight)
+        top_bar_layout.setSpacing(3)
+
+        autosave_label = QtWidgets.QLabel("Autosaving is enabled.")
+        autosave_font = autosave_label.font()
+        autosave_font.setPointSize(8)
+        autosave_font.setItalic(True)
+        autosave_label.setFont(autosave_font)
+        top_bar_layout.addWidget(autosave_label)
+
+        close_button = StandardButtonWidget("Close")
+        close_button.clicked.connect(lambda: self.change_view("select_map"))
+        top_bar_layout.addWidget(close_button)
+
+        # Create tools row
+        toolbar = QtWidgets.QWidget()
+        toolbar.setStyleSheet("background-color: #727272; border-bottom: 1px solid black;")
+        toolbar.setFixedHeight(40)
+        toolbar_layout = QtWidgets.QHBoxLayout(toolbar)
+        toolbar_layout.setContentsMargins(5, 0, 5, 0)
+        toolbar_layout.setAlignment(QtCore.Qt.AlignmentFlag.AlignLeft)
+        
+        # Add element button
+        add_element = AddElementButtonWidget()
+        toolbar_layout.addWidget(add_element)
+
+        # Create main editor area (100% <-> x split)
+        main = QtWidgets.QWidget()
+        main_layout = QtWidgets.QHBoxLayout(main)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.setSpacing(0)
+
+        # Actual editor area
+        editor_area = EditorGraphicsView()
+        editor_area.addElementEvent.connect(lambda event: self._create_element(map, event.x, event.y))
+        editor_area.moveElementEvent.connect(lambda event: self._move_element(map, event.id, event.x, event.y))
+        editor_area.render(map.get_elements()) # Initial pass
+        map.register_on_change(lambda: editor_area.render(map.get_elements())) # When elements change, this is ran
+        main_layout.addWidget(editor_area)
+
+        # Properties side bar
+        sidebar = QtWidgets.QWidget()
+        sidebar.setFixedWidth(260)
+        sidebar.setStyleSheet("background-color: #444; border-left: 1px solid black")
+        main_layout.addWidget(sidebar)
+
+        self.layout.addWidget(top_bar)
+        self.layout.addWidget(toolbar)
+        self.layout.addWidget(main)
+
 
     def open_create_view(self, map_store: MapStore):
         # Change to vertical layout
@@ -127,15 +208,19 @@ class BaseWindow(QtWidgets.QWidget):
         # Change to horizontal layout
         self.clear_window()
         self.layout = QtWidgets.QHBoxLayout()
+        self.layout.setContentsMargins(0, 0, 0, 0)
+        self.layout.setAlignment(QtCore.Qt.AlignmentFlag.AlignLeft)
         self.setLayout(self.layout)
 
         # Left panel
         left_panel = QtWidgets.QWidget()
         left_panel.setFixedWidth(300)
+        left_panel.setStyleSheet("background-color: #727272; border-right: 1px solid #000")
         left_layout = QtWidgets.QVBoxLayout(left_panel)
         
         # Title above scroll area
         select_title = QtWidgets.QLabel("Select Map")
+        select_title.setStyleSheet("color: black; border-right: 0px;")
         select_title.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         left_layout.addWidget(select_title)
 
@@ -154,27 +239,18 @@ class BaseWindow(QtWidgets.QWidget):
         else:
             for option in options:
                 option_row = QtWidgets.QWidget()
+                option_row.setStyleSheet("border-right: 0px;")
                 row_layout = QtWidgets.QHBoxLayout(option_row)
                 row_layout.setContentsMargins(0, 0, 0, 0)
 
-                option_widget = QtWidgets.QLabel(option["text"], alignment=QtCore.Qt.AlignLeft)
-                option_widget.setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.PointingHandCursor))
-                option_widget.setStyleSheet("""
-                    QLabel {
-                        background: gray;
-                        padding: 10px;
-                    }
-                    QLabel:hover {
-                        background: lightgray;
-                    }
-                """)
+                option_button = StandardButtonWidget(option["text"])
+                option_button.setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.PointingHandCursor))
+                option_button.clicked.connect(lambda _, opt_id=option["id"]: self.change_view("edit_map", opt_id))
 
-                delete_button = QtWidgets.QPushButton("Delete")
-                delete_button.setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.PointingHandCursor))
+                delete_button = DeleteButtonWidget(24)
                 delete_button.clicked.connect(lambda: self.change_view("delete_map", option["id"]))
-                delete_button.setFixedWidth(50)
 
-                row_layout.addWidget(option_widget)
+                row_layout.addWidget(option_button)
                 row_layout.addWidget(delete_button)
                 options_layout.addWidget(option_row)
 
@@ -183,13 +259,14 @@ class BaseWindow(QtWidgets.QWidget):
 
         # Button area
         button_container = QtWidgets.QWidget()
+        button_container.setStyleSheet("border-right: 0px;")
         button_container.setFixedHeight(50)
         button_row = QtWidgets.QHBoxLayout(button_container)
         button_row.setSpacing(10)
         button_row.addStretch()
-        button_row.addWidget(QtWidgets.QPushButton("Import"))
-        button_row.addWidget(QtWidgets.QPushButton("Export"))
-        create_button = QtWidgets.QPushButton("Create")
+        button_row.addWidget(StandardButtonWidget("Import"))
+        button_row.addWidget(StandardButtonWidget("Export"))
+        create_button = StandardButtonWidget("Create")
         create_button.clicked.connect(lambda: self.change_view("create_map"))
         button_row.addWidget(create_button)
         button_row.addStretch()
@@ -214,14 +291,20 @@ class Application:
         self.map_store = map_store
 
     # Handle changing application views
+    # TODO: Would it be better to store all the parameters in the BaseWindow class as privates?
     def change_to_view(self, view_name: views, option: Any = None):
         if view_name == "select_map":
             self.window.open_select_view([ { "id": i, "text": map.name } for i, map in enumerate(self.map_store.list()) ])
         elif view_name == "create_map":
             self.window.open_create_view(self.map_store)
         elif view_name == "delete_map":
+            # TODO: Get specific map by id
             map_to_delete = self.map_store.list(no_refresh=True)[option]
             self.window.open_delete_view(map_to_delete, self.map_store)
+        elif view_name == "edit_map":
+            # TODO: Get specific map by id
+            map_to_edit = self.map_store.list(no_refresh=True)[option]
+            self.window.open_editor_view(map_to_edit, self.map_store)
 
     # Open the main window
     def open(self, width: int = 800, height: int = 600):

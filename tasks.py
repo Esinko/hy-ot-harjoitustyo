@@ -27,3 +27,11 @@ def build(ctx):
     # In case of dumpbin on Windows issues manually execute BEFORE running this task (or fix your path):
     # set PATH=%PATH%;C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.41.34120\bin\Hostx64\x64
     ctx.run(f"pyside6-deploy ./src/index.py --name \"Blocky Dungeon Mapper\"")
+
+@task
+def lint(ctx):
+    ctx.run(f"pylint src")
+
+@task
+def lint(ctx):
+    ctx.run(f"autopep8 --in-place --recursive src")

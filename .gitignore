@@ -8,3 +8,4 @@ nuitka-crash-report.xml
 pysidedeploy.spec
 deployment
 Blocky Dungeon Mapper.exe
+testdata-*

@@ -21,4 +21,4 @@ CREATE TABLE Elements (
     height INTEGER NOT NULL DEFAULT 1,
     background_image INTEGER REFERENCES Assets(id) ON DELETE CASCADE DEFAULT NULL,
     background_color TEXT
-)
+);

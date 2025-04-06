@@ -12,7 +12,7 @@ sql_table = {
             Elements.y,
             Elements.width,
             Elements.height,
-            Elements.background_image AS background_image_id,
+            Elements.background_image AS background_image,
             Assets.name AS background_image_name,
             Assets.value AS background_image_data,
             Elements.background_color AS background_image_color
@@ -27,7 +27,7 @@ sql_table = {
             Elements.y,
             Elements.width,
             Elements.height,
-            Elements.background_image AS background_image_id,
+            Elements.background_image AS background_image,
             Assets.name AS background_image_name,
             Assets.value AS background_image_data,
             Elements.background_color AS background_image_color
@@ -36,5 +36,9 @@ sql_table = {
         WHERE Elements.id = ?;
     """,
 
-    "create_element": "INSERT Elements (name, x, y, width, height) VALUES (?, ?, ?, ?, ?)"
+    "create_element": "INSERT INTO Elements (name, x, y, width, height) VALUES (?, ?, ?, ?, ?);",
+
+    "edit_element": "UPDATE Elements SET name = ?, x = ?, y = ?, width = ?, height = ?, background_image = ?, background_color = ? WHERE id = ?",
+
+    "element_exists": "SELECT EXISTS (SELECT id FROM Elements WHERE id = ?)"
 }

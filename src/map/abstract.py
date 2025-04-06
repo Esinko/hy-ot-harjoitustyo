@@ -1,9 +1,8 @@
 from pathlib import Path
 from typing import List, Tuple, Any, TypedDict
-from typing_extensions import Omit
+from types import FunctionType
 from sqlite3 import Connection, connect, Cursor
 from map.sql import sql_table
-from src.map import sql
 
 # Standard asset in the map
 class Asset:
@@ -15,6 +14,16 @@ class Asset:
         self.id = id
         self.name = name
         self.data = data
+
+class ElementEditable(TypedDict):
+    id: int
+    name: str
+    x: int
+    y: int
+    width: int
+    height: int
+    background_image: Asset | None
+    background_color: str | None
 
 # An element in the grid
 class Element:
@@ -34,18 +43,25 @@ class Element:
         self.y = y
         self.width = width
         self.height = height
-        self.background_image = Asset(background_image_id, background_image_name, background_image_data) if self.background_image else None
+        self.background_image = Asset(background_image_id, background_image_name, background_image_data) if background_image_id else None
         self.background_color = background_color
 
-class ElementEditable(TypedDict):
-    id: int
-    name: str
-    x: int
-    y: int
-    width: int
-    height: int
-    background_image: Asset | None
-    background_color: str | None
+    def to_dict(self) -> ElementEditable:
+        return {
+            "id": self.id,
+            "name": self.name or "",
+            "x": self.x,
+            "y": self.y,
+            "width": self.width,
+            "height": self.height,
+            # TODO: Properly handle these converions
+            "background_image": self.background_image,
+            "background_color": self.background_color,
+        }
+
+class ElementNotFoundException(Exception): 
+    def __init__(self, element_id):
+        super().__init__(f"Element for id '{element_id}' not found.")
 
 # A single map
 class Map:
@@ -53,6 +69,7 @@ class Map:
     map_file: Path
     elements: List[Element]
     _connection: Connection | None
+    _on_change: FunctionType | None
 
     def __init__(self, map_file: Path, connection: Connection | None = None):
         self.map_file = map_file
@@ -66,6 +83,9 @@ class Map:
             self._connection.close()
             self._connection = None
 
+    def register_on_change(self, listener: FunctionType):
+        self._on_change = listener
+
     # Utility for executing commands against the map
     def _execute(self, query: str, parameters: Tuple[Any] | dict) -> Tuple[Connection, Cursor]:
         if not self._connection:
@@ -73,7 +93,9 @@ class Map:
         cursor = self._connection.cursor()
         cursor.execute(query, parameters)
         self._connection.commit()
-        return self._connection, cursor
+        last_inserted_id = cursor.lastrowid
+        cursor.close()
+        return self._connection, last_inserted_id
     
     # Utility for querying the map
     def _query(self, query = str, parameters: Tuple[Any] | dict = {}, limit: int = -1) -> list[Any]:
@@ -97,7 +119,7 @@ class Map:
         self._connection = connect(self.map_file)
 
         # Read the name of the map
-        [result] = self._query(query=sql_table["get_name"])
+        [result], _ = self._query(query=sql_table["get_name"], limit=1)
         if not result:
             raise Exception("Unable to read map Meta table.")
         self.name = result[0]
@@ -110,22 +132,48 @@ class Map:
     
     # Get all the elements
     def get_elements(self) -> List[Element]:
-        [elements_raw] = self._query(query=sql_table["get_elements"])
+        elements_raw, _ = self._query(query=sql_table["get_elements"])
         return [Element(*result) for result in elements_raw]
     
     def get_element(self, id: int) -> Element | None:
-        [element_raw] = self._query(query=sql_table["get_element"], parameters=(id,))
+        [element_raw], _ = self._query(query=sql_table["get_element"], parameters=(id,))
         return Element(*element_raw) if element_raw else None
     
     # Create an element on the map
     def create_element(self, element_editable: ElementEditable) -> Element:
-        _, id = self._query(query=sql_table["create_element"], parameters=(element_editable[""]))
+        _, id = self._execute(query=sql_table["create_element"], parameters=(element_editable["name"],
+                                                                           element_editable["x"],
+                                                                           element_editable["y"],
+                                                                           element_editable["width"],
+                                                                           element_editable["height"]))
         createdElement = self.get_element(id)
-        return Element(*createdElement)
+        if self._on_change: self._on_change()
+        return createdElement
+    
+    # Check if a element with a given id exists
+    def element_exists(self, id: int) -> bool:
+        [[result]], _ = self._query(query=sql_table["element_exists"], parameters=(id,))
+        return result == 1
     
     # Edit an element on the map
     def edit_element(self, element_id: int, element_editable: ElementEditable) -> Element:
-        pass
+        # Make sure element exists, otherwise use of create_element is required
+        if not self.element_exists(element_id):
+            raise ElementNotFoundException(element_id)
+        
+        self._execute(query=sql_table["edit_element"], parameters=(element_editable["name"],
+                                                                   element_editable["x"],
+                                                                   element_editable["y"],
+                                                                   element_editable["width"],
+                                                                   element_editable["height"],
+                                                                   element_editable["background_image"].id if element_editable["background_image"] else None,
+                                                                   element_editable["background_color"],
+                                                                   element_id))
+        if self._on_change: self._on_change()
+        return self.get_element(element_editable["id"]) # NOTE: Id can be changed, technically
+        
+    
+        
 
 # Manage maps in a folder (a store)
 class MapStore:
@@ -167,12 +215,12 @@ class MapStore:
         self._maps = []
         for map_file in self.store_folder.iterdir():
             if map_file.is_file() and map_file.name.endswith(".dmap"):
-                # Attempt to create map
+                # Attempt to open map
                 try:
                     map = Map(map_file)
                     map.open()
                     self._maps.append(map)
-                except Exception:
+                except Exception as err:
                     # TODO: We discard exceptions for now. Should we log a warning?
                     pass
 

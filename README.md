@@ -3,21 +3,18 @@
 
 *"Dungeon-karttahallintaohjelmisto"*. Helppoon kartanpiirtoon **RolePlaying**-pelin aikana.
 
-**Linkit**
-- Laskarit
-    - [vk1](./laskarit/viikko1.md)
-    - [vk2](./laskarit/viikko2/)
-    - [vk3](./laskarit/viikko3/)
-        - [tehtävä-1](./laskarit/viikko3/tehtävä1.md)
-        - [tehtävä-2](./laskarit/viikko3/tehtävä2.md)
+Sovelluksella voi luoda karttoja ja tuoda kartoille monimuotoisia grid-järjestelmään sovitettuja elementtejä. Sovellus tallentaa muutokset automaattisesti ja muokattavaa karttaa on helppo vaihtaa. Lisää ominaisuuksia tulossa.
+
+## Dokumentaatio ja linkit
 - [Vaatimusmäärittely](./dokumentaatio/vaatimusmaarittely.md)
 - [Työaikakirjanpito](./dokumentaatio/tyoaikakirjanpito.md)
 - [Changelog](./dokumentaation/changelog.md)
 
 
 ## Projektista
+Sovelluksen tarvitsema Python versio ja tiedot riippuvuuksista löytyvät `pyproject.toml`-tiedostosta.
 
-### Käynnistys
+### Asennus ja käynnistys
 1. Asenna riippuvuudet: `poetry install`
 2. Suorita lähteestä: `poetry run invoke start`
 
@@ -41,3 +38,18 @@
 1. Tee muutokset
 2. Commit
 3. Päivitä työaikakirjanpito & changelog
+
+## Komentorivitoiminnot
+Kommennot on toteuttu invoke-kirjastolla.
+
+### `poetry run invoke start`
+Suorittaa sovelluksen.
+
+### `poetry run invoke test`
+Suorittaa sovelluksen testit.
+
+### `poetry run invoke coverage-report`
+Luo sovellukselle testikattavuusraportin `htmlcov`-kansioon ja avaa sen selaimessa.
+
+### `poetry run invoke lint`
+Suorittaa `pylint` koodin laaduntarkastusohjelmiston sovelluksen koodikantaa vasten. Tyylisäännöt on määritelty `.pylintrc`-tiedostossa.

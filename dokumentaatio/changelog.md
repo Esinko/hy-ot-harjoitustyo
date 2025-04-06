@@ -10,3 +10,4 @@
 - Lisätty pylint ja siistitty koodia
 - Lisätty karttojen elementtien lisäys ja muokkaaminen
 - Parannettu viansietoa
+- Päivitetty projektin `README.md`

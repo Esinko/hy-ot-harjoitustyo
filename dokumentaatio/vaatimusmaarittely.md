@@ -7,16 +7,16 @@ Sovelluksen avulla voi luoda, tallentaa ja muokata grid-järjestelmää hyödynt
 Sovelluksessa ei ole erilaisia käyttäjätyyppejä.
 
 ## Perusversion Suunnitellut Toiminnallisuudet
-- Tiedostojen hallinta
-    - Käyttäjä voi luoda uuden kartan
+- `tehty` Tiedostojen hallinta
+    - `tehty` Käyttäjä voi luoda uuden kartan
     - Käyttäjä voi tallentaa kartan valitsemaansa sijaintiin
     - Käyttäjä voi avata kartan valitsemastaan sijainnista
-    - Käyttäjä voi asettaa kartalle nimen
+    - `tehty` Käyttäjä voi asettaa kartalle nimen
 - Muokkaaminen ja luonti (editori)
     - Käyttäjä voi muokata kartan elementtien väriä ja taustakuvaa
-    - Käyttäjä voi lisätä kartalle erilaisia muotoja ja viivoja (neliö, pallo, kolmio ja viiva)
+    - `osittain` Käyttäjä voi lisätä kartalle erilaisia muotoja ja viivoja (neliö, pallo, kolmio ja viiva)
     - Käyttäjä voi lisätä karttalle tekstiä
-    - Käyttäjä voi määrittää muotojen ja merkintöjen sijainnin, koon ja värin
+    - `osittain` Käyttäjä voi määrittää muotojen ja merkintöjen sijainnin, koon ja värin
     - Käyttäjä voi poistaa elementtejä, muotoja ja muita merkintöjä
     - Käyttäjä näkee kaikki muodot ja merkinnät listauksesta editorissa ja voi valita ne muokattaviksi listalta
     - Käyttäjä voi peruuttaa tekemänsä muutokset

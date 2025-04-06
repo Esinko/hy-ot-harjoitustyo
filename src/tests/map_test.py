@@ -8,11 +8,13 @@ testdata_path_prefix = "./src/tests/testdata-"
 schema_path = "./src/map/schema.sql"
 init_path = "./src/map/init.sql"
 
+
 class TestMapStore(unittest.TestCase):
     def setUp(self):
         self.test_path = testdata_path_prefix + str(uuid4())
         self.testdata_dir = Path(self.test_path)
-        self.store = MapStore(path=self.test_path, init_path=init_path, schema_path=schema_path)
+        self.store = MapStore(path=self.test_path,
+                              init_path=init_path, schema_path=schema_path)
 
     def tearDown(self):
         self.store.close()

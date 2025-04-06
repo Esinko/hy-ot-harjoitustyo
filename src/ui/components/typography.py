@@ -1,5 +1,6 @@
 from PySide6 import QtWidgets, QtGui, QtCore
 
+
 class GraphicsLabel(QtWidgets.QGraphicsTextItem):
     def __init__(self, backgroundColor: QtGui.QColor, color: QtGui.QColor = "black", text: str = ""):
         super().__init__(text)

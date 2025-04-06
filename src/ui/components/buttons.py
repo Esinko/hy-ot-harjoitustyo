@@ -2,6 +2,7 @@ from PySide6 import QtWidgets, QtGui, QtCore
 from PySide6.QtSvgWidgets import QSvgWidget
 from os.path import abspath
 
+
 class AddElementButtonWidget(QtWidgets.QPushButton):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
@@ -37,6 +38,7 @@ class AddElementButtonWidget(QtWidgets.QPushButton):
 
         drag.exec(QtCore.Qt.DropAction.CopyAction)
 
+
 class DeleteButtonWidget(QtWidgets.QPushButton):
     def __init__(self, box_size: int = 32, parent=None):
         super().__init__(parent=parent)
@@ -62,7 +64,8 @@ class DeleteButtonWidget(QtWidgets.QPushButton):
         """)
         self.setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.PointingHandCursor))
 
-class StandardButtonWidget(QtWidgets.QPushButton):  
+
+class StandardButtonWidget(QtWidgets.QPushButton):
     def __init__(self, text: str, parent=None):
         super().__init__(parent=parent)
         self.setStyleSheet("""

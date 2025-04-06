@@ -2,8 +2,8 @@ from pathlib import Path
 from typing import List, Tuple, Any, TypedDict
 from types import FunctionType
 from sqlite3 import Connection, connect, Cursor
-from map.sql import sql_table
 from traceback import print_exception
+from map.sql import sql_table
 
 # Standard asset in the map
 class Asset:
@@ -11,8 +11,8 @@ class Asset:
     name: str
     data: bytes
 
-    def __init__(self, id: int, name: str, data: bytes): # pylint: disable=redefined-builtin
-        self.id = id
+    def __init__(self, map_id: int, name: str, data: bytes):
+        self.id = map_id
         self.name = name
         self.data = data
 
@@ -39,7 +39,7 @@ class Element:
     background_color: str | None
 
     def __init__(self,
-                 id: int,  # pylint: disable=redefined-builtin
+                 element_id: int,
                  name: str,
                  x: int,
                  y: int,
@@ -50,7 +50,7 @@ class Element:
                  background_image_data: bytes | None,
                  background_color: str | None
     ):
-        self.id = id
+        self.id = element_id
         self.name = name
         self.x = x
         self.y = y
@@ -243,11 +243,10 @@ class MapStore:
                     opened_map = Map(map_file)
                     opened_map.open()
                     self._maps.append(opened_map)
-                except Exception as err: # pylint: disable=bare-except
-                    # If open fails, ignore the map
+                except Exception as err: # pylint: disable=broad-exception-caught
+                    # If open fails, ignore the map and log a clear error
                     print(f"WARNING: Failed to open map '{map_file.name}' due to an error:")
                     print_exception(type(err), err, err.__traceback__)
-                    pass
 
         return self._maps
 

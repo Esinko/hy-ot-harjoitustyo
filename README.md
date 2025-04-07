@@ -6,6 +6,7 @@
 Sovelluksella voi luoda karttoja ja tuoda kartoille monimuotoisia grid-järjestelmään sovitettuja elementtejä. Sovellus tallentaa muutokset automaattisesti ja muokattavaa karttaa on helppo vaihtaa.
 
 **Editorin käyttö**
+
 Kartalle lisätään uusia elementtejä raahaamalla niitä kartalle työkalupalkista. Elementin voi valita muokkaamisen kohteeksi hiiren oikealla näppäimellä
 
 ## Dokumentaatio ja linkit

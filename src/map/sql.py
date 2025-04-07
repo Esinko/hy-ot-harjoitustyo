@@ -50,5 +50,13 @@ sql_table = {
         WHERE id = ?
     """,
 
-    "element_exists": "SELECT EXISTS (SELECT id FROM Elements WHERE id = ?)"
+    "remove_element": "DELETE FROM Elements WHERE id = ?",
+
+    "element_exists": "SELECT EXISTS (SELECT id FROM Elements WHERE id = ?)",
+
+    "get_assets": "SELECT name, value FROM Assets",
+
+    "create_asset": "INSERT INTO Assets (name, value) VALUES (?, ?)",
+
+    "remove_asset": "DELETE FROM Assets WHERE id = ?"
 }

@@ -1,19 +1,18 @@
 from PySide6 import QtCore, QtWidgets, QtGui
 from sys import exit
 from typing import List, TypedDict, Literal, Callable, Any
-from map.abstract import MapStore, Map
+from map.abstract import MapStore, Map, ElementEditable
 from uuid import uuid4
 from ui.components.editor import EditorGraphicsView
 from ui.components.buttons import AddElementButtonWidget, StandardButtonWidget, DeleteButtonWidget
+from ui.components.editor_properties import EditorPropertiesWidget
 
 views = Literal["select_map", "create_map", "delete_map", "edit_map"]
 view_changer = Callable[[views, Any], None]
 
-
 class SelectOption(TypedDict):
     id: str
     text: str
-
 
 class BaseWindow(QtWidgets.QWidget):
     change_view: view_changer
@@ -88,25 +87,39 @@ class BaseWindow(QtWidgets.QWidget):
         top_bar.setStyleSheet("background-color: #686868")
         top_bar.setFixedHeight(32)
         top_bar_layout = QtWidgets.QHBoxLayout(top_bar)
-        top_bar_layout.setContentsMargins(5, 3, 5, 8)
-        top_bar_layout.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight)
+        top_bar_layout.setContentsMargins(5, 3, 5, 3)
         top_bar_layout.setSpacing(3)
 
+        # Map name on the left
+        map_name = QtWidgets.QLabel(f"Map: {map.name}")
+        map_name_font = map_name.font()
+        map_name_font.setPointSize(10)
+        map_name.setFont(map_name_font)
+
+        # Right side of top row
+        top_bar_right = QtWidgets.QWidget()
+        top_bar_right_layout = QtWidgets.QHBoxLayout(top_bar_right)
+        top_bar_right_layout.setContentsMargins(0, 0, 0, 0)
+        top_bar_right_layout.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight)
         autosave_label = QtWidgets.QLabel("Autosaving is enabled.")
         autosave_font = autosave_label.font()
         autosave_font.setPointSize(8)
         autosave_font.setItalic(True)
         autosave_label.setFont(autosave_font)
-        top_bar_layout.addWidget(autosave_label)
+        top_bar_right_layout.addWidget(autosave_label)
 
         close_button = StandardButtonWidget("Close")
         close_button.clicked.connect(lambda: self.change_view("select_map"))
-        top_bar_layout.addWidget(close_button)
+        top_bar_right_layout.addWidget(close_button)
+
+        # Join top bar sides
+        top_bar_layout.addWidget(map_name)
+        top_bar_layout.addStretch()
+        top_bar_layout.addWidget(top_bar_right)
 
         # Create tools row
         toolbar = QtWidgets.QWidget()
-        toolbar.setStyleSheet(
-            "background-color: #727272; border-bottom: 1px solid black;")
+        toolbar.setStyleSheet("background-color: #727272; border-bottom: 1px solid black;")
         toolbar.setFixedHeight(40)
         toolbar_layout = QtWidgets.QHBoxLayout(toolbar)
         toolbar_layout.setContentsMargins(5, 0, 5, 0)
@@ -134,10 +147,16 @@ class BaseWindow(QtWidgets.QWidget):
         main_layout.addWidget(editor_area)
 
         # Properties side bar
-        sidebar = QtWidgets.QWidget()
-        sidebar.setFixedWidth(260)
-        sidebar.setStyleSheet(
-            "background-color: #444; border-left: 1px solid black")
+        sidebar = EditorPropertiesWidget()
+        editor_area.focusElementEvent.connect(
+            lambda event: sidebar.setElement(map.get_element(event.id)) if event.id != None else sidebar.setElement(None)
+        )
+        sidebar.editElementEvent.connect(
+            lambda event: map.edit_element(event.id, event.element_editable)
+        )
+        sidebar.removeElementEvent.connect(
+            lambda event: map.remove_element(event.id)
+        )
         main_layout.addWidget(sidebar)
 
         self.layout.addWidget(top_bar)
@@ -238,6 +257,7 @@ class BaseWindow(QtWidgets.QWidget):
         # Scroll area for options
         scroll_area = QtWidgets.QScrollArea()
         scroll_area.setWidgetResizable(True)
+        scroll_area.setStyleSheet("QScrollArea { border: 1px solid #393939; border-right: 0px; }")
         scroll_area.setHorizontalScrollBarPolicy(
             QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         scroll_area.setVerticalScrollBarPolicy(

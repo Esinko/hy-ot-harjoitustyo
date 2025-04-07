@@ -5,6 +5,11 @@ from sqlite3 import Connection, connect, Cursor
 from traceback import print_exception
 from map.sql import sql_table
 
+class AssetEditable(TypedDict):
+    id: int | None
+    name: str
+    data: List[int]
+
 # Standard asset in the map
 class Asset:
     id: int
@@ -16,6 +21,12 @@ class Asset:
         self.name = name
         self.data = data
 
+    def to_dict(self) -> AssetEditable:
+        return {
+            "id": self.id,
+            "name": self.name or "",
+            "data": list(self.data)
+        }
 
 class ElementEditable(TypedDict):
     id: int
@@ -24,7 +35,7 @@ class ElementEditable(TypedDict):
     y: int
     width: int
     height: int
-    background_image: Asset | None
+    background_image: AssetEditable | None
     background_color: str | None
 
 # An element in the grid
@@ -69,8 +80,7 @@ class Element:
             "y": self.y,
             "width": self.width,
             "height": self.height,
-            # TODO: Properly handle these conversions
-            "background_image": self.background_image,
+            "background_image": self.background_image.to_dict() if self.background_image else None,
             "background_color": self.background_color,
         }
 
@@ -159,10 +169,11 @@ class Map:
         elements_raw, _ = self._query(query=sql_table["get_elements"])
         return [Element(*result) for result in elements_raw]
 
+    # Get a single element
     def get_element(self, element_id: int) -> Element | None:
-        [element_raw], _ = self._query(
+        element_raw, _ = self._query(
             query=sql_table["get_element"], parameters=(element_id,))
-        return Element(*element_raw) if element_raw else None
+        return Element(*element_raw[0]) if element_raw else None
 
     # Create an element on the map
     def create_element(self, element_editable: ElementEditable) -> Element:
@@ -189,21 +200,47 @@ class Map:
         if not self.element_exists(element_id):
             raise ElementNotFoundException(element_id)
 
+        # If no id is provided for the background image, remove current and create a new asset
+        if element_editable["background_image"] is None or "id" not in element_editable["background_image"]:
+            current_element = self.get_element(element_id) # FIXME: This is not optimal
+            if current_element.background_image:
+                self.remove_asset(current_element.background_image.id)
+        
+        # Create new asset if required
+        new_asset = None
+        if element_editable["background_image"] is None and "id" not in element_editable["background_image"]:
+            new_asset = self.create_asset(element_editable["background_image"]["name"], bytes(element_editable["background_image"]["data"]))
+
         self._execute(query=sql_table["edit_element"],
                       parameters=(element_editable["name"],
                                   element_editable["x"],
                                   element_editable["y"],
                                   element_editable["width"],
                                   element_editable["height"],
-                                  element_editable["background_image"].id
-                                    if element_editable["background_image"] else None,
+                                  None if not element_editable["background_image"] else element_editable["id"] if not new_asset else new_asset.id,
                                   element_editable["background_color"],
                                   element_id))
         if self._on_change:
             self._on_change()
         # NOTE: Id can be changed, technically
         return self.get_element(element_editable["id"])
+    
+    # Remove an element
+    def remove_element(self, element_id: int):
+        # TODO: Check element exists
+        self._execute(query=sql_table["remove_element"], parameters=(element_id,))
+        if self._on_change:
+            self._on_change()
 
+    # Create a new asset
+    def create_asset(self, name: str, value: bytes) -> Asset:
+        _, asset_id = self._execute(query=sql_table["create_asset"], parameters=(name, value))
+        return Asset(asset_id, name, value)
+    
+    # Remove an asset
+    def remove_asset(self, asset_id: int):
+        # TODO: Check asset exists
+        self._execute(query=sql_table["remove_asset"], parameters=(asset_id,))
 
 # Manage maps in a folder (a store)
 class MapStore:

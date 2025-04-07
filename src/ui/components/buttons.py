@@ -1,5 +1,5 @@
 from PySide6 import QtWidgets, QtGui, QtCore
-from PySide6.QtSvgWidgets import QSvgWidget
+from PySide6.QtSvgWidgets import QSvgWidget # This is required because QT
 from os.path import abspath
 
 

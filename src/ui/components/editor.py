@@ -3,7 +3,6 @@ from map.abstract import Element
 from typing import List
 from ui.components.typography import GraphicsLabel
 
-
 class AddElementEvent:
     x: int
     y: int
@@ -16,7 +15,6 @@ class AddElementEvent:
         self.width = width
         self.height = height
 
-
 class MoveElementEvent:
     id: int
     x: int
@@ -27,26 +25,32 @@ class MoveElementEvent:
         self.y = y
         self.id = id
 
-
 class FocusElementEvent:
-    id: int
+    id: int | None
 
     def __init__(self, id):
         self.id = id
 
 # MARK: Tile
-
-
 class TileWidget(QtCore.QObject, QtWidgets.QGraphicsRectItem):
     focusEvent = QtCore.Signal(FocusElementEvent)
     id: int
     edit_circle_radius = 32
 
-    def __init__(self, *args, id: int,  **kwargs):
+    def __init__(self, *args, id: int, background_image: bytes | None, **kwargs):
         QtCore.QObject.__init__(self)
         QtWidgets.QGraphicsRectItem.__init__(self, *args, **kwargs)
         self.id = id
-        self.setBrush(QtGui.QBrush(QtGui.QColor("#8F9092")))
+
+        # Render background or default color
+        if background_image:
+            background = QtGui.QImage.fromData(background_image)
+            pixmap = QtGui.QPixmap.fromImage(background)
+            self.setBrush(QtGui.QBrush(pixmap.scaled(self.rect().size().toSize())))
+        else:
+            self.setBrush(QtGui.QBrush(QtGui.QColor("#8F9092")))
+
+        # Mouse config and zValue
         self.setAcceptedMouseButtons(
             QtCore.Qt.MouseButton.LeftButton | QtCore.Qt.MouseButton.RightButton)
         self.setFlag(QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsFocusable)
@@ -123,11 +127,10 @@ class TileWidget(QtCore.QObject, QtWidgets.QGraphicsRectItem):
         super().mousePressEvent(event)
 
 # MARK: Editor
-
-
 class EditorGraphicsView(QtWidgets.QGraphicsView):
     addElementEvent = QtCore.Signal(AddElementEvent)
     moveElementEvent = QtCore.Signal(MoveElementEvent)
+    focusElementEvent = QtCore.Signal(FocusElementEvent)
     elements: List[Element] = []
     tileWidgets: List[TileWidget] = []
     focusedTileWidget: TileWidget | None = None
@@ -266,21 +269,32 @@ class EditorGraphicsView(QtWidgets.QGraphicsView):
             event.ignore()
 
     # Set focused tile in the editor
-    def _setFocusedTile(self, tile: TileWidget):
-        self.focusedTileWidget = tile
-        self.focusedTileId = tile.id
+    def _setFocusedTile(self, tile: TileWidget | None):
+        if tile == None:
+            self.focusedTileWidget = None
+            self.focusedTileId = None
+            self.focusElementEvent.emit(FocusElementEvent(None))
+        else:
+            self.focusedTileWidget = tile
+            self.focusedTileId = tile.id
+            self.focusElementEvent.emit(FocusElementEvent(tile.id))
         self.viewport().update()
 
     # Add grid elements to the map
+    # MARK: Render
     def render(self, elements: List[Element]):
         self.scene().clear()
         self.elements = elements
         self.tileWidgets = []
 
+        gave_focus = False
+
         for element in elements:
             # Create tile
             tile = TileWidget(element.x * self.element_size, element.y *
-                              self.element_size, self.element_size, self.element_size, id=element.id)
+                              self.element_size, self.element_size, self.element_size,
+                              id=element.id, background_image=element.background_image.data if element.background_image != None else None)
+            
             # The parameter magic here forces python to use the tile from this iteration of the loop!
             tile.focusEvent.connect(lambda _, t=tile: self._setFocusedTile(t))
             self.scene().addItem(tile)
@@ -288,6 +302,7 @@ class EditorGraphicsView(QtWidgets.QGraphicsView):
 
             # Update in focus tile
             if element.id == self.focusedTileId:
+                gave_focus = True
                 self._setFocusedTile(tile)
 
             # Create tile name
@@ -310,3 +325,7 @@ class EditorGraphicsView(QtWidgets.QGraphicsView):
                 (element.y * self.element_size) +
                 self.element_size - label_rect.height() - 10
             )
+
+        # If nothing gained focus, clear it
+        if not gave_focus:
+            self._setFocusedTile(None)

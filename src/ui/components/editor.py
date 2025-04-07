@@ -40,17 +40,30 @@ class TileWidget(QtCore.QObject, QtWidgets.QGraphicsRectItem):  # MARK: Tile
     id: int
     edit_circle_radius = 32
 
-    def __init__(self, *args, id: int, background_image: bytes | None, **kwargs):
+    def __init__(self, *args, id: int, background_image: bytes | None, rotation: int, **kwargs):
         QtCore.QObject.__init__(self)
         QtWidgets.QGraphicsRectItem.__init__(self, *args, **kwargs)
         self.id = id
 
         # Render background or default color
         if background_image:
+            # Create pixmap from image
             background = QtGui.QImage.fromData(background_image)
             pixmap = QtGui.QPixmap.fromImage(background)
-            self.setBrush(QtGui.QBrush(
-                pixmap.scaled(self.rect().size().toSize())))
+
+            # Scale the pixmap
+            scaled_pixmap = pixmap.scaled(self.rect().size().toSize())
+
+            # Add rotation
+            pixmap_center = scaled_pixmap.rect().center()
+            pixmap_transform = QtGui.QTransform()
+            pixmap_transform.translate(pixmap_center.x(), pixmap_center.y())
+            pixmap_transform.rotate(rotation)
+            pixmap_transform.translate(-pixmap_center.x(), -pixmap_center.y())
+            rotated_pixmap = scaled_pixmap.transformed(pixmap_transform)
+
+            # Paint the background
+            self.setBrush(QtGui.QBrush(rotated_pixmap))
         else:
             self.setBrush(QtGui.QBrush(QtGui.QColor("#8F9092")))
 
@@ -297,7 +310,8 @@ class EditorGraphicsView(QtWidgets.QGraphicsView):  # MARK: Editor
             # Create tile
             tile = TileWidget(element.x * self.element_size, element.y *
                               self.element_size, self.element_size, self.element_size,
-                              id=element.id, background_image=element.background_image.data if element.background_image != None else None)
+                              id=element.id, background_image=element.background_image.data if element.background_image != None else None,
+                              rotation=element.rotation)
 
             # The parameter magic here forces python to use the tile from this iteration of the loop!
             tile.focusEvent.connect(lambda _, t=tile: self._setFocusedTile(t))

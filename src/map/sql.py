@@ -12,6 +12,7 @@ sql_table = {
             Elements.y,
             Elements.width,
             Elements.height,
+            Elements.rotation,
             Elements.background_image AS background_image,
             Assets.name AS background_image_name,
             Assets.value AS background_image_data,
@@ -27,6 +28,7 @@ sql_table = {
             Elements.y,
             Elements.width,
             Elements.height,
+            Elements.rotation,
             Elements.background_image AS background_image,
             Assets.name AS background_image_name,
             Assets.value AS background_image_data,
@@ -45,6 +47,7 @@ sql_table = {
             y = ?,
             width = ?,
             height = ?,
+            rotation = ?,
             background_image = ?,
             background_color = ?
         WHERE id = ?

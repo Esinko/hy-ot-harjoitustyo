@@ -1,5 +1,5 @@
 from PySide6 import QtWidgets, QtCore
-from ui.components.inputs import TextInputWidget, ImageFileInputWidget
+from ui.components.inputs import TextInputWidget, ImageFileInputWidget, DialInputWidget
 from ui.components.buttons import StandardButtonWidget
 from map.abstract import Element, ElementEditable
 
@@ -33,15 +33,17 @@ class EditorPropertiesWidget(QtWidgets.QWidget):
         self.target_element = None
 
         # Set values
-        self.name_input.setDisabled(element == None)
-        self.name_input.setText(element.name if element != None else "")
-        self.background_input.setDisabled(element == None)
+        self.name_input.setDisabled(element is None)
+        self.name_input.setText(element.name if element is not None else "")
+        self.background_input.setDisabled(element is None)
         if element != None and element.background_image:
             self.background_input.setText(
                 f"Image: {element.background_image.name}")
         else:
             self.background_input.setText("Select Image")
-        self.delete_button.setDisabled(element == None)
+        self.delete_button.setDisabled(element is None)
+        self.rotation_dial.setDisabled(element is None)
+        self.rotation_dial.setValue(element.rotation + 180)
 
         # Set target last to prevent emission of changed events
         self.target_element = element
@@ -69,6 +71,14 @@ class EditorPropertiesWidget(QtWidgets.QWidget):
         self.removeElementEvent.emit(
             RemoveElementEvent(self.target_element.id))
         self.target_element = None
+
+    def _edit_rotation(self):
+        if not self.target_element:
+            return
+        element_editable = self.target_element.to_dict()
+        element_editable["rotation"] = self.rotation_dial.value() - 180
+        self.editElementEvent.emit(EditElementEvent(
+            self.target_element.id, element_editable))
 
     def __init__(self, parent=None):
         super().__init__(parent=parent)
@@ -104,7 +114,16 @@ class EditorPropertiesWidget(QtWidgets.QWidget):
         sidebar_layout.addWidget(element_background_label)
         sidebar_layout.addSpacerItem(QtWidgets.QSpacerItem(0, 4))
         sidebar_layout.addWidget(self.background_input)
+        sidebar_layout.addSpacerItem(QtWidgets.QSpacerItem(0, 8))
 
+        # Rotation dial
+        element_rotation_label = QtWidgets.QLabel("Content Rotation:")
+        sidebar_layout.addWidget(element_rotation_label)
+        sidebar_layout.addSpacerItem(QtWidgets.QSpacerItem(0, 4))
+        self.rotation_dial = DialInputWidget()
+        self.rotation_dial.valueChanged.connect(self._edit_rotation)
+        sidebar_layout.addWidget(self.rotation_dial)
+        
         # Delete element button
         self.delete_button = StandardButtonWidget("Delete Element")
         self.delete_button.clicked.connect(self._delete)

@@ -37,6 +37,7 @@ class ElementEditable(TypedDict):
     y: int
     width: int
     height: int
+    rotation: int
     background_image: AssetEditable | None
     background_color: str | None
 
@@ -50,6 +51,7 @@ class Element:  # MARK: Element
     height: int
     background_image: Asset | None
     background_color: str | None
+    rotation: int
 
     def __init__(self,
                  element_id: int,
@@ -58,6 +60,7 @@ class Element:  # MARK: Element
                  y: int,
                  width: int,
                  height: int,
+                 rotation: int,
                  background_image_id: int | None,
                  background_image_name: int | None,
                  background_image_data: bytes | None,
@@ -73,6 +76,7 @@ class Element:  # MARK: Element
                                       background_image_name,
                                       background_image_data) if background_image_id else None
         self.background_color = background_color
+        self.rotation = rotation
 
     def to_dict(self) -> ElementEditable:
         return {
@@ -84,6 +88,7 @@ class Element:  # MARK: Element
             "height": self.height,
             "background_image": self.background_image.to_dict() if self.background_image else None,
             "background_color": self.background_color,
+            "rotation": self.rotation
         }
 
 

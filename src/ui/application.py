@@ -86,7 +86,13 @@ class BaseWindow(QtWidgets.QWidget):
 
         # Create top row
         top_bar = QtWidgets.QWidget()
-        top_bar.setStyleSheet("background-color: #686868")
+        top_bar.setObjectName("top_bar")
+        top_bar.setStyleSheet("""
+            #top_bar {
+                background-color: #686868;
+                border-bottom: 1px solid #5C5C5C; 
+            }                                      
+        """)
         top_bar.setFixedHeight(32)
         top_bar_layout = QtWidgets.QHBoxLayout(top_bar)
         top_bar_layout.setContentsMargins(5, 3, 5, 3)

@@ -121,18 +121,19 @@ class Map:  # MARK: Map
         # Make sure element exists, otherwise use of create_element is required
         if not self.element_exists(element_id):
             raise ElementNotFoundException(element_id)
+        
+        # NOTE: This is not optimal
+        current_element = self.get_element(element_id)
 
         # If no id is provided for the background image, remove current and create a new asset
         if (element_editable["background_image"] is None or
             "id" not in element_editable["background_image"]):
-            current_element = self.get_element(
-                element_id)  # NOTE: This is not optimal
             if current_element.background_image:
                 self.remove_asset(current_element.background_image.id)
 
         # Create new asset if required
         new_asset = None
-        if (element_editable["background_image"] is None and
+        if (element_editable["background_image"] is not None and
             "id" not in element_editable["background_image"]):
             new_asset = self.create_asset(element_editable["background_image"]["name"], bytes(
                 element_editable["background_image"]["data"]))
@@ -143,6 +144,7 @@ class Map:  # MARK: Map
                                   element_editable["y"],
                                   element_editable["width"],
                                   element_editable["height"],
+                                  element_editable["rotation"],
                                   None if not element_editable["background_image"] else (
                                       element_editable["id"] if not new_asset else new_asset.id
                                   ),

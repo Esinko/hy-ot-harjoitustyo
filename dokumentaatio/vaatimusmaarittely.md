@@ -9,15 +9,20 @@ Sovelluksessa ei ole erilaisia käyttäjätyyppejä.
 ## Perusversion Suunnitellut Toiminnallisuudet
 - `tehty` Tiedostojen hallinta
     - `tehty` Käyttäjä voi luoda uuden kartan
+    - `tehty` Käyttäjä voi poistaa kartan
     - Käyttäjä voi tallentaa kartan valitsemaansa sijaintiin
     - Käyttäjä voi avata kartan valitsemastaan sijainnista
     - `tehty` Käyttäjä voi asettaa kartalle nimen
 - Muokkaaminen ja luonti (editori)
     - Käyttäjä voi muokata kartan elementtien väriä ja taustakuvaa
-    - `osittain` Käyttäjä voi lisätä kartalle erilaisia muotoja ja viivoja (neliö, pallo, kolmio ja viiva)
+        - `tehty` Neliöiden taustakuva
+    - Käyttäjä voi lisätä kartalle erilaisia muotoja ja viivoja (neliö, pallo, kolmio ja viiva)
+        - `tehty` Neliöt
     - Käyttäjä voi lisätä karttalle tekstiä
-    - `osittain` Käyttäjä voi määrittää muotojen ja merkintöjen sijainnin, koon ja värin
+    - Käyttäjä voi määrittää muotojen ja merkintöjen sijainnin ja koon
+        - `tehty` Neliöiden sijainti
     - Käyttäjä voi poistaa elementtejä, muotoja ja muita merkintöjä
+        - `tehty` Neliöt
     - Käyttäjä näkee kaikki muodot ja merkinnät listauksesta editorissa ja voi valita ne muokattaviksi listalta
     - Käyttäjä voi peruuttaa tekemänsä muutokset
     - Editorissa on valmiita esimerkkitaustoja kartan elementeille

@@ -15,3 +15,5 @@
 ## Viikko 4 (7.4.2025)
 - Luotu alustava pakkauskaavio
 - Muokattu näkymät käsittelemään vain Map-luokkia (ei MapStore-luokkaa)
+- Lisätty kartan elementtien nimien ja taustakuvan lisäys ja muokkaus
+- Lisätty kartan elementtien poisto

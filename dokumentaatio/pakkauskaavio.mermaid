@@ -1,0 +1,21 @@
+flowchart TD
+    main@{ shape: div-rect, label: "main\n(sovelluksen käynnistysfunktio)" }
+    subgraph Tiedostojenhallinta
+        map-store@{ shape: rect, label: "MapStore" }
+        map@{ shape: rect, label: "Map" }
+        element@{ shape: rect, label: "Element" }
+        asset@{ shape: rect, label: "Asset" }
+    end
+    subgraph Käyttöliittymä
+        application@{ shape: rect, label: "Application" }
+        base-window@{ shape: rect, label: "BaseWindow" }
+    end
+
+    main --> map-store
+    map-store --> map
+    main --> application
+    application --> base-window
+    application -.-> map-store
+    map --> element
+    map --> asset
+    base-window -.-> map

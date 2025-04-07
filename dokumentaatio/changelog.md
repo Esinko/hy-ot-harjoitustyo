@@ -11,3 +11,7 @@
 - Lisätty karttojen elementtien lisäys ja muokkaaminen
 - Parannettu viansietoa
 - Päivitetty projektin `README.md`
+
+## Viikko 4 (7.4.2025)
+- Luotu alustava pakkauskaavio
+- Muokattu näkymät käsittelemään vain Map-luokkia (ei MapStore-luokkaa)

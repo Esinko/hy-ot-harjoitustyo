@@ -2,6 +2,7 @@ from PySide6 import QtWidgets, QtGui, QtCore
 from ui.components.buttons import StandardButtonWidget
 from pathlib import Path
 
+
 class TextInputWidget(QtWidgets.QLineEdit):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
@@ -20,19 +21,23 @@ class TextInputWidget(QtWidgets.QLineEdit):
             }
         """)
 
+
 class SelectFileEvent:
     file: Path
     name: str
     data: bytes
+
     def __init__(self, file_path):
         # TODO: Handle read issue here?
         self.file = Path(file_path)
         self.data = self.file.read_bytes()
         self.name = self.file.name
 
+
 class ImageFileInputWidget(StandardButtonWidget):
     # TODO: Convert to group, add filename in read-only text line, then add X and select buttons on the right
     selectFileEvent = QtCore.Signal(SelectFileEvent)
+
     def _select_file(self):
         file_path, _ = QtWidgets.QFileDialog.getOpenFileName(
             None,
@@ -45,4 +50,3 @@ class ImageFileInputWidget(StandardButtonWidget):
     def __init__(self, parent=None):
         super().__init__(text="Select Image", parent=parent)
         self.clicked.connect(self._select_file)
-        

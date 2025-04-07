@@ -58,5 +58,7 @@ sql_table = {
 
     "create_asset": "INSERT INTO Assets (name, value) VALUES (?, ?)",
 
-    "remove_asset": "DELETE FROM Assets WHERE id = ?"
+    "remove_asset": "DELETE FROM Assets WHERE id = ?",
+
+    "asset_exists": "SELECT EXISTS (SELECT id FROM Assets WHERE id = ?)"
 }

@@ -3,6 +3,7 @@ from ui.components.inputs import TextInputWidget, ImageFileInputWidget
 from ui.components.buttons import StandardButtonWidget
 from map.abstract import Element, ElementEditable
 
+
 class EditElementEvent:
     id: int
     element_editable: ElementEditable
@@ -11,11 +12,13 @@ class EditElementEvent:
         self.id = element_id
         self.element_editable = element_editable
 
+
 class RemoveElementEvent:
     id: int
 
     def __init__(self, element_id: int):
         self.id = element_id
+
 
 class EditorPropertiesWidget(QtWidgets.QWidget):
     editElementEvent = QtCore.Signal(EditElementEvent)
@@ -33,8 +36,11 @@ class EditorPropertiesWidget(QtWidgets.QWidget):
         self.name_input.setDisabled(element == None)
         self.name_input.setText(element.name if element != None else "")
         self.background_input.setDisabled(element == None)
-        if element != None and element.background_image: self.background_input.setText(f"Image: {element.background_image.name}")
-        else: self.background_input.setText("Select Image")
+        if element != None and element.background_image:
+            self.background_input.setText(
+                f"Image: {element.background_image.name}")
+        else:
+            self.background_input.setText("Select Image")
         self.delete_button.setDisabled(element == None)
 
         # Set target last to prevent emission of changed events
@@ -45,7 +51,8 @@ class EditorPropertiesWidget(QtWidgets.QWidget):
             return
         self.target_element.name = self.name_input.text()
         element_editable = self.target_element.to_dict()
-        self.editElementEvent.emit(EditElementEvent(self.target_element.id, element_editable))
+        self.editElementEvent.emit(EditElementEvent(
+            self.target_element.id, element_editable))
 
     def _edit_background_image(self, event):
         if not self.target_element:
@@ -55,10 +62,12 @@ class EditorPropertiesWidget(QtWidgets.QWidget):
             "name": event.name,
             "data": list(event.data)
         }
-        self.editElementEvent.emit(EditElementEvent(self.target_element.id, element_editable))
+        self.editElementEvent.emit(EditElementEvent(
+            self.target_element.id, element_editable))
 
     def _delete(self):
-        self.removeElementEvent.emit(RemoveElementEvent(self.target_element.id))
+        self.removeElementEvent.emit(
+            RemoveElementEvent(self.target_element.id))
         self.target_element = None
 
     def __init__(self, parent=None):
@@ -90,7 +99,8 @@ class EditorPropertiesWidget(QtWidgets.QWidget):
         element_background_label = QtWidgets.QLabel("Tile Image:")
         self.background_input = ImageFileInputWidget()
         self.background_input.setDisabled(True)
-        self.background_input.selectFileEvent.connect(self._edit_background_image)
+        self.background_input.selectFileEvent.connect(
+            self._edit_background_image)
         sidebar_layout.addWidget(element_background_label)
         sidebar_layout.addSpacerItem(QtWidgets.QSpacerItem(0, 4))
         sidebar_layout.addWidget(self.background_input)

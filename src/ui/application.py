@@ -10,9 +10,11 @@ from ui.components.editor_properties import EditorPropertiesWidget
 views = Literal["select_map", "create_map", "delete_map", "edit_map"]
 view_changer = Callable[[views, Any], None]
 
+
 class SelectOption(TypedDict):
     id: str
     text: str
+
 
 class BaseWindow(QtWidgets.QWidget):
     change_view: view_changer
@@ -119,7 +121,8 @@ class BaseWindow(QtWidgets.QWidget):
 
         # Create tools row
         toolbar = QtWidgets.QWidget()
-        toolbar.setStyleSheet("background-color: #727272; border-bottom: 1px solid black;")
+        toolbar.setStyleSheet(
+            "background-color: #727272; border-bottom: 1px solid black;")
         toolbar.setFixedHeight(40)
         toolbar_layout = QtWidgets.QHBoxLayout(toolbar)
         toolbar_layout.setContentsMargins(5, 0, 5, 0)
@@ -149,7 +152,8 @@ class BaseWindow(QtWidgets.QWidget):
         # Properties side bar
         sidebar = EditorPropertiesWidget()
         editor_area.focusElementEvent.connect(
-            lambda event: sidebar.setElement(map.get_element(event.id)) if event.id != None else sidebar.setElement(None)
+            lambda event: sidebar.setElement(map.get_element(
+                event.id)) if event.id != None else sidebar.setElement(None)
         )
         sidebar.editElementEvent.connect(
             lambda event: map.edit_element(event.id, event.element_editable)
@@ -257,7 +261,8 @@ class BaseWindow(QtWidgets.QWidget):
         # Scroll area for options
         scroll_area = QtWidgets.QScrollArea()
         scroll_area.setWidgetResizable(True)
-        scroll_area.setStyleSheet("QScrollArea { border: 1px solid #393939; border-right: 0px; }")
+        scroll_area.setStyleSheet(
+            "QScrollArea { border: 1px solid #393939; border-right: 0px; }")
         scroll_area.setHorizontalScrollBarPolicy(
             QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         scroll_area.setVerticalScrollBarPolicy(

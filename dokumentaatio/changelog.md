@@ -17,3 +17,4 @@
 - Muokattu näkymät käsittelemään vain Map-luokkia (ei MapStore-luokkaa)
 - Lisätty kartan elementtien nimien ja taustakuvan lisäys ja muokkaus
 - Lisätty kartan elementtien poisto
+- Lisätty liitetiedostojen käsittely

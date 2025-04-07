@@ -3,6 +3,7 @@ from map.abstract import Element
 from typing import List
 from ui.components.typography import GraphicsLabel
 
+
 class AddElementEvent:
     x: int
     y: int
@@ -15,6 +16,7 @@ class AddElementEvent:
         self.width = width
         self.height = height
 
+
 class MoveElementEvent:
     id: int
     x: int
@@ -25,14 +27,15 @@ class MoveElementEvent:
         self.y = y
         self.id = id
 
+
 class FocusElementEvent:
     id: int | None
 
     def __init__(self, id):
         self.id = id
 
-# MARK: Tile
-class TileWidget(QtCore.QObject, QtWidgets.QGraphicsRectItem):
+
+class TileWidget(QtCore.QObject, QtWidgets.QGraphicsRectItem):  # MARK: Tile
     focusEvent = QtCore.Signal(FocusElementEvent)
     id: int
     edit_circle_radius = 32
@@ -46,7 +49,8 @@ class TileWidget(QtCore.QObject, QtWidgets.QGraphicsRectItem):
         if background_image:
             background = QtGui.QImage.fromData(background_image)
             pixmap = QtGui.QPixmap.fromImage(background)
-            self.setBrush(QtGui.QBrush(pixmap.scaled(self.rect().size().toSize())))
+            self.setBrush(QtGui.QBrush(
+                pixmap.scaled(self.rect().size().toSize())))
         else:
             self.setBrush(QtGui.QBrush(QtGui.QColor("#8F9092")))
 
@@ -126,8 +130,8 @@ class TileWidget(QtCore.QObject, QtWidgets.QGraphicsRectItem):
                 return
         super().mousePressEvent(event)
 
-# MARK: Editor
-class EditorGraphicsView(QtWidgets.QGraphicsView):
+
+class EditorGraphicsView(QtWidgets.QGraphicsView):  # MARK: Editor
     addElementEvent = QtCore.Signal(AddElementEvent)
     moveElementEvent = QtCore.Signal(MoveElementEvent)
     focusElementEvent = QtCore.Signal(FocusElementEvent)
@@ -294,7 +298,7 @@ class EditorGraphicsView(QtWidgets.QGraphicsView):
             tile = TileWidget(element.x * self.element_size, element.y *
                               self.element_size, self.element_size, self.element_size,
                               id=element.id, background_image=element.background_image.data if element.background_image != None else None)
-            
+
             # The parameter magic here forces python to use the tile from this iteration of the loop!
             tile.focusEvent.connect(lambda _, t=tile: self._setFocusedTile(t))
             self.scene().addItem(tile)

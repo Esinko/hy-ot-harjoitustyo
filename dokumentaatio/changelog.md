@@ -18,3 +18,4 @@
 - Lisätty kartan elementtien nimien ja taustakuvan lisäys ja muokkaus
 - Lisätty kartan elementtien poisto
 - Lisätty liitetiedostojen käsittely
+- Lisätty elementtien kierto

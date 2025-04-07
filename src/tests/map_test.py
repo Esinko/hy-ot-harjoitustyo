@@ -50,6 +50,6 @@ class TestMapStore(unittest.TestCase):
         self.store.create_map("secret-name", "test-map")
         list = self.store.list()
         self.assertEqual(len(list), 1)
-        self.store.delete_map(list[0])
+        list[0].delete()
         list = self.store.list()
         self.assertEqual(len(list), 0)

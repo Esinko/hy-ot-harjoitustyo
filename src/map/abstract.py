@@ -96,10 +96,16 @@ class Map:
         self.elements = []
         self._connection = connection
 
+    # Close map from editing
     def close(self):
         if self._connection:
             self._connection.close()
             self._connection = None
+
+    # Delete the map itself
+    def delete(self):
+        self.close()
+        self.map_file.unlink()
 
     def register_on_change(self, listener: FunctionType):
         self._on_change = listener
@@ -285,7 +291,3 @@ class MapStore:
 
         return new_map
 
-    # Delete a map
-    def delete_map(self, target_map: Map):
-        target_map.close()
-        target_map.map_file.unlink()

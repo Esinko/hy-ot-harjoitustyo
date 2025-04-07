@@ -33,8 +33,8 @@ class BaseWindow(QtWidgets.QWidget):
             map_store.create_map(name, f"{uuid4()}.dmap")
             self.change_view("select_map")  # TODO: Change to editor
 
-    def _delete_map(self, map: Map, map_store: MapStore):
-        map_store.delete_map(map)
+    def _delete_map(self, map: Map):
+        map.delete()
         self.change_view("select_map")
 
     def _create_element(self, map: Map, x: int, y: int):
@@ -75,7 +75,7 @@ class BaseWindow(QtWidgets.QWidget):
         # Now detach old layout
         QtWidgets.QWidget().setLayout(old_layout)
 
-    def open_editor_view(self, map: Map, map_store: MapStore):
+    def open_editor_view(self, map: Map):
         # Change to vertical layout
         self.clear_window()
         self.layout = QtWidgets.QVBoxLayout()
@@ -182,7 +182,7 @@ class BaseWindow(QtWidgets.QWidget):
             name_input, alignment=QtCore.Qt.AlignmentFlag.AlignCenter)
         self.layout.addLayout(button_row)
 
-    def open_delete_view(self, map: Map, map_store: MapStore):
+    def open_delete_view(self, map: Map):
         # Change to vertical layout
         self.clear_window()
         self.layout = QtWidgets.QVBoxLayout()
@@ -202,7 +202,7 @@ class BaseWindow(QtWidgets.QWidget):
 
         # Delete button
         delete_button = QtWidgets.QPushButton("Delete")
-        delete_button.clicked.connect(lambda: self._delete_map(map, map_store))
+        delete_button.clicked.connect(lambda: self._delete_map(map))
 
         # Cancel button
         cancel_button = QtWidgets.QPushButton("Cancel")
@@ -310,6 +310,7 @@ class Application:
 
     # Handle changing application views
     # TODO: Would it be better to store all the parameters in the BaseWindow class as privates?
+    # TODO: Separate each view to their own classes?
     def change_to_view(self, view_name: views, option: Any = None):
         if view_name == "select_map":
             self.window.open_select_view(
@@ -319,11 +320,11 @@ class Application:
         elif view_name == "delete_map":
             # TODO: Get specific map by id
             map_to_delete = self.map_store.list(no_refresh=True)[option]
-            self.window.open_delete_view(map_to_delete, self.map_store)
+            self.window.open_delete_view(map_to_delete)
         elif view_name == "edit_map":
             # TODO: Get specific map by id
             map_to_edit = self.map_store.list(no_refresh=True)[option]
-            self.window.open_editor_view(map_to_edit, self.map_store)
+            self.window.open_editor_view(map_to_edit)
 
     # Open the main window
     def open(self, width: int = 800, height: int = 600):

@@ -19,3 +19,6 @@
 - Lisätty kartan elementtien poisto
 - Lisätty liitetiedostojen käsittely
 - Lisätty elementtien kierto
+
+## Viikko 4 (8.4.2025)
+- Korjattu readme

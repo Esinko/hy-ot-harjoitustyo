@@ -13,7 +13,7 @@ Kartalle lisätään uusia elementtejä raahaamalla niitä kartalle työkalupalk
 - [Vaatimusmäärittely](./dokumentaatio/vaatimusmaarittely.md)
 - [Työaikakirjanpito](./dokumentaatio/tyoaikakirjanpito.md)
 - [Changelog](./dokumentaation/changelog.md)
-
+- [Arkkitehtuuri](./dokumentaatio/arkkitehtuuri.md)
 
 ## Projektista
 Sovelluksen tarvitsema Python versio ja tiedot riippuvuuksista löytyvät `pyproject.toml`-tiedostosta.

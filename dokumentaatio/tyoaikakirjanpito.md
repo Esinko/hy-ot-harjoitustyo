@@ -6,5 +6,6 @@
 | 28.3.2025 | 4 | yksinkertainen käyttöliittymäpohja (kartan valinta) |
 | 6.4.2025 | 5 | editorinäkymän alku, tyylittelyä ja pylint |
 | 7.4.2025 | 7 | arkkitehtuuridokumentin luonti ja koodin siistintää + editorinäkymään elementtien hallinta |
+| 8.4.2025 | 0 | lisätty arkkitehtuuri-linkki readme:hen |
 
 **SUMMA:** `17` h

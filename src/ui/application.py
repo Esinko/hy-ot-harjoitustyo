@@ -213,6 +213,9 @@ class BaseWindow(QtWidgets.QWidget):
         text_properties_sidebar.editTextEvent.connect(
             lambda event: map.edit_text(event.id, event.text_editable)
         )
+        text_properties_sidebar.removeTextEvent.connect(
+            lambda event: map.remove_text(event.id)
+        )
         editor_area.focusObjectEvent.connect(
             # TODO: Handle different types of objects
             lambda event: (
@@ -347,6 +350,7 @@ class BaseWindow(QtWidgets.QWidget):
         self.clear_window()
         self.layout = QtWidgets.QHBoxLayout()
         self.layout.setContentsMargins(0, 0, 0, 0)
+        self.layout.setSpacing(0)
         self.layout.setAlignment(QtCore.Qt.AlignmentFlag.AlignLeft)
         self.setLayout(self.layout)
 
@@ -416,22 +420,21 @@ class BaseWindow(QtWidgets.QWidget):
         button_row = QtWidgets.QHBoxLayout(button_container)
         button_row.setSpacing(10)
         button_row.addStretch()
-        button_row.addWidget(StandardButtonWidget("Import"))
-        button_row.addWidget(StandardButtonWidget("Export"))
-        create_button = StandardButtonWidget("Create")
+        create_button = StandardButtonWidget("Create Map")
         create_button.clicked.connect(lambda: self.change_view("create_map"))
         button_row.addWidget(create_button)
         button_row.addStretch()
 
         left_layout.addWidget(button_container)
         self.layout.addWidget(left_panel)
-        self.layout.addSpacing(15)
 
-        # Placeholder for preview on the right
-        red_square = QtWidgets.QLabel("")
-        red_square.setFixedSize(400, 400)
-        red_square.setStyleSheet("background: red;")
-        self.layout.addWidget(red_square)
+        # Preview in the right
+        editor_area = EditorGraphicsView(is_preview=True)
+        editor_area.setHorizontalScrollBarPolicy(
+            QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        editor_area.setVerticalScrollBarPolicy(
+            QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.layout.addWidget(editor_area)
 
 # MARK: Application
 class Application:

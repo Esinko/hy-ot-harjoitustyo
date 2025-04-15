@@ -240,8 +240,8 @@ class Map:  # MARK: Map
     def remove_text(self, text_id: int):
         if not self.text_exists(text_id):
             raise TextNotFoundException(text_id)
-        self._did_change()
         self._execute(query=sql_table["remove_text"], parameters=(text_id,))
+        self._did_change()
 
 
 class MapStore:  # MARK: MapStore

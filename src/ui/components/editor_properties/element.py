@@ -1,7 +1,7 @@
 from PySide6 import QtWidgets, QtCore
 from ui.components.editor_sidebar import EditorSidebar
-from ui.components.inputs import TextInputWidget, ImageFileInputWidget, DialInputWidget
-from ui.components.buttons import StandardButtonWidget
+from ui.components.inputs import InputGroupWidget, TextInputWidget, ImageFileInputWidget, DialInputWidget
+from ui.components.buttons import DeleteButtonWidget, StandardButtonWidget
 from map.abstract import Element, ElementEditable
 
 
@@ -68,10 +68,14 @@ class ElementPropertiesWidget(EditorSidebar):
         if not self.target_element:
             return
         element_editable = self.target_element.to_dict()
-        element_editable["background_image"] = {
-            "name": event.name,
-            "data": list(event.data)
-        }
+        if not event:
+            # Delete background
+            element_editable["background_image"] = None
+        else:
+            element_editable["background_image"] = {
+                "name": event.name,
+                "data": list(event.data)
+            }
         self.editElementEvent.emit(EditElementEvent(
             self.target_element.id, element_editable))
 
@@ -104,13 +108,18 @@ class ElementPropertiesWidget(EditorSidebar):
 
         # Element background
         element_background_label = QtWidgets.QLabel("Tile Image:")
+        background_row = InputGroupWidget()
         self.background_input = ImageFileInputWidget()
         self.background_input.setDisabled(True)
         self.background_input.selectFileEvent.connect(
             self._edit_background_image)
+        background_row.addWidget(self.background_input)
+        delete_background_button = DeleteButtonWidget(box_size=24)
+        delete_background_button.clicked.connect(self._edit_background_image)
+        background_row.addWidget(delete_background_button)
         self.sidebar_layout.addWidget(element_background_label)
         self.sidebar_layout.addSpacerItem(QtWidgets.QSpacerItem(0, 4))
-        self.sidebar_layout.addWidget(self.background_input)
+        self.sidebar_layout.addWidget(background_row)
         self.sidebar_layout.addSpacerItem(QtWidgets.QSpacerItem(0, 8))
 
         # Rotation dial

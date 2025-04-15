@@ -102,7 +102,7 @@ class TextWidget(EditorObject): # MARK: Text
     text_label: GraphicsLabel
     text: MapText
 
-    def __init__(self, *args, text: MapText, rotation: int):
+    def __init__(self, *args, text: MapText):
         super().__init__(*args, object_id=text.id, type="text")
         self.setZValue(2)
         self.text = text
@@ -112,12 +112,8 @@ class TextWidget(EditorObject): # MARK: Text
         text_font.setPointSize(text.font_size)
         self.text_label = GraphicsLabel(
             text=text.value, font=text_font, color=text.color, backgroundColor="transparent")
-        self.text_label.setZValue(80)
         self.text_label.document().adjustSize()
         self.text_label.setPos(text.x, text.y)
-        self.text_label.setTransformOriginPoint(
-            self.text_label.boundingRect().center())
-        self.text_label.setRotation(text.rotation)
         self.text_label.setParentItem(self)
 
         # Properly scale element based on text size
@@ -125,6 +121,11 @@ class TextWidget(EditorObject): # MARK: Text
         text_rect = self.text_label.boundingRect()
         self.setRect(current_rect.x(), current_rect.y(),
                      text_rect.width(), text_rect.height())
+
+        # Add rotation
+        self.setTransformOriginPoint(
+            self.boundingRect().center())
+        self.setRotation(text.rotation)
 
     # Paint the tile and add outline when focused
 
@@ -414,8 +415,7 @@ class EditorGraphicsView(QtWidgets.QGraphicsView):  # MARK: Editor
                                  text.y,  # y
                                  1,
                                  1,
-                                 text=text,
-                                 rotation=text.rotation)
+                                 text=text)
 
         text_widget.focusEvent.connect(
             lambda: self._setFocusedObjectWidget(text_widget))

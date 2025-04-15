@@ -111,6 +111,8 @@ class TextWidget(EditorObject):  # MARK: Text
         self.text_label.setZValue(80)
         self.text_label.document().adjustSize()
         self.text_label.setPos(text.x, text.y)
+        self.text_label.setTransformOriginPoint(self.text_label.boundingRect().center())
+        self.text_label.setRotation(text.rotation)
         self.text_label.setParentItem(self)
         
         # Properly scale element based on text size
@@ -320,11 +322,7 @@ class EditorGraphicsView(QtWidgets.QGraphicsView):  # MARK: Editor
                 self.moveTextEvent.emit(MoveTextEvent(target_text, centered_x, centered_y))
                 event.accept()
             elif event_mime_text == "BDM; new_text":
-                text_x = int(scene_pos.x() //
-                             self.element_size)
-                text_y = int(scene_pos.y() //
-                             self.element_size)
-                self.addTextEvent.emit(AddTextEvent(text_x, text_y, 1, 1))
+                self.addTextEvent.emit(AddTextEvent(scene_pos.x(), scene_pos.y(), 1, 1))
                 event.accept()
             else:
                 event.setDropAction(QtCore.Qt.DropAction.IgnoreAction)

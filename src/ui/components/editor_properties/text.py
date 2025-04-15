@@ -1,7 +1,7 @@
 from PySide6 import QtWidgets, QtCore
 from map.types import MapText, TextEditable
 from ui.components.editor_sidebar import EditorSidebar
-from ui.components.inputs import TextAreaInputWidget, TextInputWidget, DialInputWidget
+from ui.components.inputs import ColorInputWidget, DragNumberInputWidget, TextAreaInputWidget, TextInputWidget, DialInputWidget
 from ui.components.buttons import StandardButtonWidget
 
 
@@ -29,6 +29,8 @@ class TextPropertiesWidget(EditorSidebar):
     value_input: TextAreaInputWidget
     delete_button: StandardButtonWidget
     rotation_dial: DialInputWidget
+    font_size_input: DragNumberInputWidget
+    color_input: ColorInputWidget
 
     def setText(self, text: MapText | None):
         # This fixes some reflow issues
@@ -46,6 +48,10 @@ class TextPropertiesWidget(EditorSidebar):
         self.delete_button.setDisabled(text is None)
         self.rotation_dial.setDisabled(text is None)
         self.rotation_dial.setValue(text.rotation + 180 if text is not None else 180)
+        self.font_size_input.setText(str(text.font_size) if text is not None else "")
+        self.font_size_input.setDisabled(text is None)
+        self.color_input.setColor(text.color if text is not None else "#000")
+        self.color_input.setDisabled(text is None)
 
         # Set target last to prevent emission of changed events
         self.target_text = text
@@ -68,6 +74,26 @@ class TextPropertiesWidget(EditorSidebar):
         if not self.target_text:
             return
         self.target_text.value = self.value_input.toPlainText()
+        text_editable = self.target_text.to_dict()
+        self.editTextEvent.emit(EditTextEvent(
+            self.target_text.id, text_editable))
+        
+    def _edit_font_size(self):
+        if not self.target_text:
+            return
+        try:
+            self.target_text.font_size = int(self.font_size_input.text())
+        except ValueError:
+            # Ignore value errors, field is empty or NaN
+            return
+        text_editable = self.target_text.to_dict()
+        self.editTextEvent.emit(EditTextEvent(
+            self.target_text.id, text_editable))
+        
+    def _edit_color(self):
+        if not self.target_text:
+            return
+        self.target_text.color = self.color_input.getColor()
         text_editable = self.target_text.to_dict()
         self.editTextEvent.emit(EditTextEvent(
             self.target_text.id, text_editable))
@@ -107,6 +133,25 @@ class TextPropertiesWidget(EditorSidebar):
         self.sidebar_layout.addWidget(text_value_label)
         self.sidebar_layout.addSpacerItem(QtWidgets.QSpacerItem(0, 4))
         self.sidebar_layout.addWidget(self.value_input)
+        self.sidebar_layout.addSpacerItem(QtWidgets.QSpacerItem(0, 8))
+
+        # Text font size
+        font_size_label = QtWidgets.QLabel("Text Font Size:")
+        self.font_size_input = DragNumberInputWidget(min_value=0, max_value=300)
+        self.font_size_input.setFixedWidth(110)
+        self.font_size_input.textChanged.connect(self._edit_font_size)
+        self.sidebar_layout.addWidget(font_size_label)
+        self.sidebar_layout.addSpacerItem(QtWidgets.QSpacerItem(0, 4))
+        self.sidebar_layout.addWidget(self.font_size_input)
+        self.sidebar_layout.addSpacerItem(QtWidgets.QSpacerItem(0, 8))
+
+        # Text color
+        color_label = QtWidgets.QLabel("Text Color:")
+        self.color_input = ColorInputWidget()
+        self.color_input.colorChanged.connect(self._edit_color)
+        self.sidebar_layout.addWidget(color_label)
+        self.sidebar_layout.addSpacerItem(QtWidgets.QSpacerItem(0, 4))
+        self.sidebar_layout.addWidget(self.color_input)
         self.sidebar_layout.addSpacerItem(QtWidgets.QSpacerItem(0, 8))
 
         # Rotation dial

@@ -50,34 +50,22 @@ class Element:  # MARK: Element
     y: int
     width: int
     height: int
+    rotation: int
     background_image: Asset | None
     background_color: str | None
-    rotation: int
 
-    def __init__(self,
-                 element_id: int,
-                 name: str,
-                 x: int,
-                 y: int,
-                 width: int,
-                 height: int,
-                 rotation: int,
-                 background_image_id: int | None,
-                 background_image_name: int | None,
-                 background_image_data: bytes | None,
-                 background_color: str | None
-                 ):
-        self.id = element_id
-        self.name = name
-        self.x = x
-        self.y = y
-        self.width = width
-        self.height = height
-        self.background_image = Asset(background_image_id,
-                                      background_image_name,
-                                      background_image_data) if background_image_id else None
-        self.background_color = background_color
-        self.rotation = rotation
+    def __init__(self, *raw):
+        self.id = raw[0]
+        self.name = raw[1]
+        self.x = raw[2]
+        self.y = raw[3]
+        self.width = raw[4]
+        self.height = raw[5]
+        self.background_image = Asset(raw[7],
+                                      raw[8],
+                                      raw[9]) if raw[7] else None
+        self.background_color = raw[9]
+        self.rotation = raw[6]
 
     def to_dict(self) -> ElementEditable:
         return {

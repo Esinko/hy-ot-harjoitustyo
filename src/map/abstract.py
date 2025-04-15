@@ -346,5 +346,6 @@ class MapStore:  # MARK: MapStore
 
         # Commit to be done
         connection.commit()
+        connection.close()
 
         return new_map

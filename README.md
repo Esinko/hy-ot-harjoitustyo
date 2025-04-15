@@ -7,7 +7,9 @@ Sovelluksella voi luoda karttoja ja tuoda kartoille monimuotoisia grid-järjeste
 
 **Editorin käyttö**
 
-Kartalle lisätään uusia elementtejä raahaamalla niitä kartalle työkalupalkista. Elementin voi valita muokkaamisen kohteeksi hiiren oikealla näppäimellä
+Kartalle lisätään uusia elementtejä raahaamalla niitä kartalle työkalupalkista. Elementin voi valita muokkaamisen kohteeksi hiiren oikealla näppäimellä.
+
+Elementin asetuksien muokkauspaneli aukeaa editorin oikealle puolelle. Voit sulkea sen `ESC`-näppäimellä.
 
 ## Dokumentaatio ja linkit
 - [Vaatimusmäärittely](./dokumentaatio/vaatimusmaarittely.md)

@@ -22,3 +22,14 @@
 
 ## Viikko 4 (8.4.2025)
 - Korjattu readme
+
+## Viikko 5 (15.4.2025)
+- Refaktoiroitu editorin renderöintiprosessi tukemaan monityyppisiä objekteja
+- Lisätty teksti-objektien lisäys kartalle, sisältää:
+    - Tietokantamuutoksia
+    - Isomman teksti-inputin
+    - Värinvalinta-inputin
+- Lisätty poista taustakuva -nappi kartan elementtien taustakuville
+- Korjattu bugi, joka johti elementin taustan katoamiseen siirrettäessä
+- Lisätty ominaisuus muokata kartan nimiä valintanäkymästä
+- Siistitty valintanäkymän ulkonäköä

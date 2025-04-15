@@ -36,7 +36,7 @@ class TextPropertiesWidget(EditorSidebar):
         # This fixes some reflow issues
         if self.target_text is not None and text is not None and self.target_text.id == text.id:
             return
-        
+
         # Disable fields
         self.target_text = None
 
@@ -47,8 +47,10 @@ class TextPropertiesWidget(EditorSidebar):
         self.value_input.setDisabled(text is None)
         self.delete_button.setDisabled(text is None)
         self.rotation_dial.setDisabled(text is None)
-        self.rotation_dial.setValue(text.rotation + 180 if text is not None else 180)
-        self.font_size_input.setText(str(text.font_size) if text is not None else "")
+        self.rotation_dial.setValue(
+            text.rotation + 180 if text is not None else 180)
+        self.font_size_input.setText(
+            str(text.font_size) if text is not None else "")
         self.font_size_input.setDisabled(text is None)
         self.color_input.setColor(text.color if text is not None else "#000")
         self.color_input.setDisabled(text is None)
@@ -69,7 +71,7 @@ class TextPropertiesWidget(EditorSidebar):
         text_editable = self.target_text.to_dict()
         self.editTextEvent.emit(EditTextEvent(
             self.target_text.id, text_editable))
-        
+
     def _edit_value(self):
         if not self.target_text:
             return
@@ -77,7 +79,7 @@ class TextPropertiesWidget(EditorSidebar):
         text_editable = self.target_text.to_dict()
         self.editTextEvent.emit(EditTextEvent(
             self.target_text.id, text_editable))
-        
+
     def _edit_font_size(self):
         if not self.target_text:
             return
@@ -89,7 +91,7 @@ class TextPropertiesWidget(EditorSidebar):
         text_editable = self.target_text.to_dict()
         self.editTextEvent.emit(EditTextEvent(
             self.target_text.id, text_editable))
-        
+
     def _edit_color(self):
         if not self.target_text:
             return
@@ -137,7 +139,8 @@ class TextPropertiesWidget(EditorSidebar):
 
         # Text font size
         font_size_label = QtWidgets.QLabel("Text Font Size:")
-        self.font_size_input = DragNumberInputWidget(min_value=0, max_value=300)
+        self.font_size_input = DragNumberInputWidget(
+            min_value=0, max_value=300)
         self.font_size_input.setFixedWidth(110)
         self.font_size_input.textChanged.connect(self._edit_font_size)
         self.sidebar_layout.addWidget(font_size_label)
@@ -161,7 +164,7 @@ class TextPropertiesWidget(EditorSidebar):
         self.rotation_dial = DialInputWidget()
         self.rotation_dial.valueChanged.connect(self._edit_rotation)
         self.sidebar_layout.addWidget(self.rotation_dial)
-        
+
         # Delete text button
         self.delete_button = StandardButtonWidget("Delete Text")
         self.delete_button.clicked.connect(self._delete)

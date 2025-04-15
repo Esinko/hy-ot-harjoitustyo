@@ -1,6 +1,7 @@
 from typing import Literal
 from PySide6 import QtWidgets, QtGui, QtCore
 
+
 class FocusEvent:
     id: int | None
     type = Literal["element", "text", None]
@@ -9,13 +10,14 @@ class FocusEvent:
         self.id = id
         self.type = type
 
+
 class EditorObject(QtCore.QObject, QtWidgets.QGraphicsRectItem):
     focusEvent = QtCore.Signal(FocusEvent)
     type: str = "any"
     id: int
     edit_circle_radius: int = 32
 
-    def __init__(self, *args, object_id: int, type: str,**kwargs):
+    def __init__(self, *args, object_id: int, type: str, **kwargs):
         QtCore.QObject.__init__(self)
         QtWidgets.QGraphicsRectItem.__init__(self, *args, **kwargs)
         self.id = object_id

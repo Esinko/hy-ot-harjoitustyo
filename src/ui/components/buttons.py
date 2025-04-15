@@ -2,6 +2,7 @@ from PySide6 import QtWidgets, QtGui, QtCore
 from PySide6.QtSvgWidgets import QSvgWidget  # This is required because QT
 from os.path import abspath
 
+
 class AddObjectButtonWidget(QtWidgets.QPushButton):
     mime_text: str = ""
 
@@ -40,13 +41,17 @@ class AddObjectButtonWidget(QtWidgets.QPushButton):
 
         drag.exec(QtCore.Qt.DropAction.CopyAction)
 
+
 class AddElementButtonWidget(AddObjectButtonWidget):
     def __init__(self, parent=None):
-        super().__init__(QtGui.QIcon(abspath("./ui/icons/add-tile.svg")), "BDM; new_element", parent)
+        super().__init__(QtGui.QIcon(abspath("./ui/icons/add-tile.svg")),
+                         "BDM; new_element", parent)
+
 
 class AddTextButtonWidget(AddObjectButtonWidget):
     def __init__(self, parent=None):
         super().__init__(QtGui.QIcon(abspath("./ui/icons/add-text.svg")), "BDM; new_text", parent)
+
 
 class IconButtonWidget(QtWidgets.QPushButton):
     def __init__(self, parent=None):
@@ -67,6 +72,7 @@ class IconButtonWidget(QtWidgets.QPushButton):
         """)
         self.setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.PointingHandCursor))
 
+
 class DeleteButtonWidget(IconButtonWidget):
     def __init__(self, box_size: int = 32, parent=None):
         super().__init__(parent=parent)
@@ -77,6 +83,7 @@ class DeleteButtonWidget(IconButtonWidget):
         self.setIconSize(QtCore.QSize(box_size - 8, box_size - 8))
         self.setFixedSize(box_size, box_size)
 
+
 class RenameButtonWidget(IconButtonWidget):
     def __init__(self, box_size: int = 32, parent=None):
         super().__init__(parent=parent)
@@ -86,6 +93,7 @@ class RenameButtonWidget(IconButtonWidget):
             box_size = 9
         self.setIconSize(QtCore.QSize(box_size - 8, box_size - 8))
         self.setFixedSize(box_size, box_size)
+
 
 class StandardButtonWidget(QtWidgets.QPushButton):
     def __init__(self, text: str, parent=None):

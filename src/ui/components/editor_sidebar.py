@@ -1,5 +1,6 @@
 from PySide6 import QtWidgets, QtCore
 
+
 class EditorSidebar(QtWidgets.QWidget):
     sidebar_layout: QtWidgets.QVBoxLayout
 

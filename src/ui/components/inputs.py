@@ -22,6 +22,7 @@ class TextInputWidget(QtWidgets.QLineEdit):
             }
         """)
 
+
 class TextAreaInputWidget(QtWidgets.QTextEdit):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
@@ -40,6 +41,7 @@ class TextAreaInputWidget(QtWidgets.QTextEdit):
                                             stop:0 #FDA239, stop:1 #F0851B);
             }
         """)
+
 
 class SelectFileEvent:
     file: Path
@@ -70,8 +72,10 @@ class ImageFileInputWidget(StandardButtonWidget):
         super().__init__(text="Select Image", parent=parent)
         self.clicked.connect(self._select_file)
 
+
 class DialInputWidget(QtWidgets.QWidget):
     valueChanged = QtCore.Signal(int)
+
     def __init__(self, step=10, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.dial = QtWidgets.QDial()
@@ -99,12 +103,12 @@ class DialInputWidget(QtWidgets.QWidget):
     def updateValue(self):
         # Handle updating the dial value in a stepped fashion
         stepped_value = round(self.dial.value(), -1)
-        self.dial.blockSignals(True) # Block signals to prevent a loop
+        self.dial.blockSignals(True)  # Block signals to prevent a loop
         self.setValue(stepped_value)
         self.dial.blockSignals(False)
         self.label.setText(f"{stepped_value - 180} deg")
         self.valueChanged.emit(stepped_value)
-    
+
     # Standard for dial
     def setValue(self, value):
         self.dial.setValue(value)
@@ -112,10 +116,11 @@ class DialInputWidget(QtWidgets.QWidget):
     # Standard for dial
     def value(self) -> int:
         return self.dial.value()
-    
+
     # Standard for dial
     def setDisabled(self, disabled: bool):
         self.dial.setDisabled(disabled)
+
 
 class InputGroupWidget(QtWidgets.QFrame):
     def __init__(self):
@@ -146,7 +151,7 @@ class DragNumberInputWidget(QtWidgets.QLineEdit):
     _drag_start_value: int
     _drag_start_x: int
 
-    def __init__(self, parent = None, drag_step = 1, min_value: int | None = None, max_value: int | None = None):
+    def __init__(self, parent=None, drag_step=1, min_value: int | None = None, max_value: int | None = None):
         super().__init__(parent=parent)
         self.drag_step = drag_step
         self.min = min_value
@@ -163,8 +168,10 @@ class DragNumberInputWidget(QtWidgets.QLineEdit):
         # Add icons on the left and the right
         left_icon = QtGui.QIcon(abspath("./ui/icons/chevron-left.svg"))
         right_icon = QtGui.QIcon(abspath("./ui/icons/chevron-right.svg"))
-        self.addAction(left_icon, QtWidgets.QLineEdit.ActionPosition.LeadingPosition)
-        self.addAction(right_icon, QtWidgets.QLineEdit.ActionPosition.TrailingPosition)
+        self.addAction(
+            left_icon, QtWidgets.QLineEdit.ActionPosition.LeadingPosition)
+        self.addAction(
+            right_icon, QtWidgets.QLineEdit.ActionPosition.TrailingPosition)
 
         # Styling
         self.setCursor(QtCore.Qt.SizeHorCursor)
@@ -222,6 +229,7 @@ class DragNumberInputWidget(QtWidgets.QLineEdit):
         else:
             super().mouseReleaseEvent(event)
 
+
 class ColorInputWidget(InputGroupWidget):
     colorChanged = QtCore.Signal(str)
     color: QtGui.QColor
@@ -245,7 +253,8 @@ class ColorInputWidget(InputGroupWidget):
         self.update_style()
 
     def choose_color(self):
-        color = QtWidgets.QColorDialog.getColor(self.color, self.parentWidget())
+        color = QtWidgets.QColorDialog.getColor(
+            self.color, self.parentWidget())
         if color.isValid():
             self.color = color
             self.colorChanged.emit(color)
@@ -259,4 +268,5 @@ class ColorInputWidget(InputGroupWidget):
         return self.color.name()
 
     def update_style(self):
-        self.colorPreview.setStyleSheet(f"background-color: {self.color.name()}; border: 1px solid #393939;")
+        self.colorPreview.setStyleSheet(
+            f"background-color: {self.color.name()}; border: 1px solid #393939;")

@@ -10,7 +10,8 @@ from ui.components.inputs import InputGroupWidget
 from ui.components.buttons import AddElementButtonWidget, AddTextButtonWidget, RenameButtonWidget, StandardButtonWidget, DeleteButtonWidget
 from ui.components.editor_properties.element import ElementPropertiesWidget
 
-views = Literal["select_map", "create_map", "delete_map", "edit_map", "rename_map"]
+views = Literal["select_map", "create_map",
+                "delete_map", "edit_map", "rename_map"]
 view_changer = Callable[[views, Any], None]
 
 
@@ -18,8 +19,8 @@ class SelectOption(TypedDict):
     id: str
     text: str
 
-# MARK: Base window
-class BaseWindow(QtWidgets.QWidget):
+
+class BaseWindow(QtWidgets.QWidget): # MARK: Base window
     change_view: view_changer
 
     def __init__(self, change_view: QtCore.Slot):
@@ -180,11 +181,12 @@ class BaseWindow(QtWidgets.QWidget):
             lambda event: self._create_text(map, event.x, event.y))
         editor_area.moveTextEvent.connect(
             lambda event: self._move_text(map, event.id, event.x, event.y))
-        
-        render_lambda = lambda: editor_area.render(
-            concat(map.get_elements(), 
+
+        def render_lambda(): return editor_area.render(
+            concat(map.get_elements(),
                    map.get_text_list()))
-        map.register_on_change(render_lambda)  # When elements change, this is ran
+        # When elements change, this is ran
+        map.register_on_change(render_lambda)
         main_layout.addWidget(editor_area)
 
         # Initial render pass for editor
@@ -195,7 +197,8 @@ class BaseWindow(QtWidgets.QWidget):
         editor_area.focusObjectEvent.connect(
             # TODO: Handle different types of objects
             lambda event: (
-                element_properties_sidebar.setElement(map.get_element(event.id))
+                element_properties_sidebar.setElement(
+                    map.get_element(event.id))
                 if event.id != None and event.type == "element" else
                 element_properties_sidebar.setElement(None)
             )
@@ -224,7 +227,7 @@ class BaseWindow(QtWidgets.QWidget):
                 text_properties_sidebar.setText(None)
             )
         )
-        
+
         main_layout.addWidget(text_properties_sidebar)
 
         self.layout.addWidget(top_bar)
@@ -394,7 +397,7 @@ class BaseWindow(QtWidgets.QWidget):
                     QtCore.Qt.CursorShape.PointingHandCursor))
                 option_button.clicked.connect(
                     lambda _, opt_id=option["id"]: self.change_view("edit_map", opt_id))
-                
+
                 # Rename button
                 rename_button = RenameButtonWidget(24)
                 rename_button.clicked.connect(
@@ -436,8 +439,8 @@ class BaseWindow(QtWidgets.QWidget):
             QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.layout.addWidget(editor_area)
 
-# MARK: Application
-class Application:
+
+class Application: # MARK: Application
     _app: QtWidgets.QApplication
     window: BaseWindow
     map_store: MapStore
@@ -460,7 +463,8 @@ class Application:
             map_to_delete = self.map_store.get(option)
             self.window.open_delete_view(map_to_delete)
         elif view_name == "rename_map":
-            self.window.open_rename_view(self.map_store.get(option[0]), option[1])
+            self.window.open_rename_view(
+                self.map_store.get(option[0]), option[1])
         elif view_name == "edit_map":
             map_to_edit = self.map_store.get(option)
             self.window.open_editor_view(map_to_edit)

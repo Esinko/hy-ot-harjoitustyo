@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import List, Tuple, Any, Union
+from typing import List, Tuple, Any
 from os.path import join
 from types import FunctionType
 from sqlite3 import Connection, connect, Cursor
@@ -66,7 +66,7 @@ class Map:  # MARK: Map
         last_inserted_id = cursor.lastrowid
         cursor.close()
         return results, last_inserted_id
-    
+
     # Call on_change listener
     def _did_change(self):
         if self._on_change:
@@ -130,20 +130,20 @@ class Map:  # MARK: Map
         # Make sure element exists, otherwise use of create_element is required
         if not self.element_exists(element_id):
             raise ElementNotFoundException(element_id)
-        
+
         # NOTE: This is not optimal
         current_element = self.get_element(element_id)
 
         # If no id is provided for the background image, remove current and create a new asset
         if (element_editable["background_image"] is None or
-            "id" not in element_editable["background_image"]):
+                "id" not in element_editable["background_image"]):
             if current_element.background_image:
                 self.remove_asset(current_element.background_image.id)
 
         # Create new asset if required
         new_asset = None
         if (element_editable["background_image"] is not None and
-            "id" not in element_editable["background_image"]):
+                "id" not in element_editable["background_image"]):
             new_asset = self.create_asset(element_editable["background_image"]["name"], bytes(
                 element_editable["background_image"]["data"]))
 
@@ -157,9 +157,9 @@ class Map:  # MARK: Map
                                   element_editable["rotation"],
                                   None if not element_editable["background_image"] else (
                                       element_editable["id"] if not new_asset else new_asset.id
-                                  ),
-                                  element_editable["background_color"],
-                                  element_id))
+                      ),
+            element_editable["background_color"],
+            element_id))
         self._did_change()
         # NOTE: Id can be changed, technically
         return self.get_element(element_editable["id"])
@@ -198,24 +198,24 @@ class Map:  # MARK: Map
             query=sql_table["create_text"], parameters=(name, text, x, y))
         self._did_change()
         return MapText(text_id, name, text, "#000", 36, x, y, 0)
-    
+
     # Get a single text object
     def get_text(self, text_id: int) -> MapText | None:
         text_raw, _ = self._query(
             query=sql_table["get_text"], parameters=(text_id,))
         return MapText(*text_raw[0]) if text_raw else None
-    
+
     # Get all text objects
     def get_text_list(self):
         texts_raw, _ = self._query(query=sql_table["get_all_text"])
         return [MapText(*result) for result in texts_raw]
-    
+
     # Check if a certain text object exists
     def text_exists(self, text_id: int) -> bool:
         [[result]], _ = self._query(
             query=sql_table["text_exists"], parameters=(text_id,))
         return result == 1
-    
+
     # Edit text object
     def edit_text(self, text_id: int, text_editable: TextEditable) -> MapText:
         # Make sure text exists, if not, create must be used
@@ -295,14 +295,14 @@ class MapStore:  # MARK: MapStore
                     print_exception(type(err), err, err.__traceback__)
 
         return self._maps
-    
+
     # Get a single map with the filename
     def get(self, map_filename: str) -> Map | None:
         # Attempt to reuse connection
-        for map in self._maps:
-            if map.map_file.name == map_filename:
-                return map
-            
+        for single_map in self._maps:
+            if single_map.map_file.name == map_filename:
+                return single_map
+
         # Try to open from store
         map_file = Path(join(self.store_folder, f"./{map_filename}"))
         if map_file.exists():
@@ -311,8 +311,8 @@ class MapStore:  # MARK: MapStore
             opened_map.open()
             self._maps.append(opened_map)
             return opened_map
-        
-        return None # Fallback
+
+        return None  # Fallback
 
     # Close the store
     def close(self):

@@ -30,6 +30,7 @@ class MoveElementEvent:
         self.y = y
         self.id = id
 
+
 class AddTextEvent:
     x: int
     y: int
@@ -37,6 +38,7 @@ class AddTextEvent:
     def __init__(self, x, y, width, height):
         self.x = x
         self.y = y
+
 
 class MoveTextEvent:
     id: int
@@ -48,6 +50,7 @@ class MoveTextEvent:
         self.y = y
         self.id = id
 
+
 class RenderingException(Exception):
     def __init__(self, object):
         super().__init__(f"Failed to render object: {object.to_dict()}")
@@ -55,6 +58,7 @@ class RenderingException(Exception):
 
 class TileWidget(EditorObject):  # MARK: Tile
     highlight: QtWidgets.QGraphicsRectItem | None = None
+
     def __init__(self, *args, tile_id: int, background_image: bytes | None, rotation: int):
         super().__init__(*args, object_id=tile_id, type="element")
 
@@ -94,7 +98,7 @@ class TileWidget(EditorObject):  # MARK: Tile
             painter.drawRect(self.rect())
 
 
-class TextWidget(EditorObject):  # MARK: Text
+class TextWidget(EditorObject): # MARK: Text
     text_label: GraphicsLabel
     text: MapText
 
@@ -111,17 +115,19 @@ class TextWidget(EditorObject):  # MARK: Text
         self.text_label.setZValue(80)
         self.text_label.document().adjustSize()
         self.text_label.setPos(text.x, text.y)
-        self.text_label.setTransformOriginPoint(self.text_label.boundingRect().center())
+        self.text_label.setTransformOriginPoint(
+            self.text_label.boundingRect().center())
         self.text_label.setRotation(text.rotation)
         self.text_label.setParentItem(self)
-        
+
         # Properly scale element based on text size
         current_rect = self.rect()
         text_rect = self.text_label.boundingRect()
-        self.setRect(current_rect.x(), current_rect.y(), text_rect.width(), text_rect.height())
-        
+        self.setRect(current_rect.x(), current_rect.y(),
+                     text_rect.width(), text_rect.height())
 
     # Paint the tile and add outline when focused
+
     def paint(self, painter, option, widget):
         super().paint(painter, option, widget)
 
@@ -141,16 +147,18 @@ class TextWidget(EditorObject):  # MARK: Text
             painter.setBrush(QtCore.Qt.BrushStyle.NoBrush)
             painter.drawRect(self.rect())
 
+
 ObjectsList = List[Union[Element, MapText]]
 
-# NOTE: We need this here to avoid a circular dependency for now. Move to own file later.
-class FocusEvent:
+
+class FocusEvent: # NOTE: We need this here to avoid a circular dependency for now. Move to own file later.
     id: int | None
     type = Literal["element", "text", None]
 
     def __init__(self, id: int, type: Literal["element", "text"]):
         self.id = id
         self.type = type
+
 
 class EditorGraphicsView(QtWidgets.QGraphicsView):  # MARK: Editor
     addElementEvent = QtCore.Signal(AddElementEvent)
@@ -297,7 +305,8 @@ class EditorGraphicsView(QtWidgets.QGraphicsView):  # MARK: Editor
                              self.element_size)
                 tile_y = int(scene_pos.y() //
                              self.element_size)
-                self.addElementEvent.emit(AddElementEvent(tile_x, tile_y, 1, 1))
+                self.addElementEvent.emit(
+                    AddElementEvent(tile_x, tile_y, 1, 1))
                 event.accept()
             elif event_mime_text.startswith("BDM; move_element "):
                 target_tile = int(event_mime_text.split(" ")[2])
@@ -305,28 +314,34 @@ class EditorGraphicsView(QtWidgets.QGraphicsView):  # MARK: Editor
                              self.element_size)
                 tile_y = int(scene_pos.y() //
                              self.element_size)
-                self.moveElementEvent.emit(MoveElementEvent(target_tile, tile_x, tile_y))
+                self.moveElementEvent.emit(
+                    MoveElementEvent(target_tile, tile_x, tile_y))
                 event.accept()
             elif event_mime_text.startswith("BDM; move_text "):
                 target_text = int(event_mime_text.split(" ")[2])
 
                 # Offset point to text center
-                text_widget: TextWidget | None = list(filter(lambda obj: obj.id == target_text and obj.type == "text", self.objectWidgets))[0]
+                text_widget: TextWidget | None = list(filter(
+                    lambda obj: obj.id == target_text and obj.type == "text", self.objectWidgets))[0]
                 if not text_widget:
-                    raise RenderingException("ERROR: Unable to resolve widget for text to be moved!")
-                
+                    raise RenderingException(
+                        "ERROR: Unable to resolve widget for text to be moved!")
+
                 text_rect = text_widget.rect()
                 centered_x = scene_pos.x() - text_rect.width() / 2
                 centered_y = scene_pos.y() - text_rect.height() / 2
 
-                self.moveTextEvent.emit(MoveTextEvent(target_text, centered_x, centered_y))
+                self.moveTextEvent.emit(MoveTextEvent(
+                    target_text, centered_x, centered_y))
                 event.accept()
             elif event_mime_text == "BDM; new_text":
-                self.addTextEvent.emit(AddTextEvent(scene_pos.x(), scene_pos.y(), 1, 1))
+                self.addTextEvent.emit(AddTextEvent(
+                    scene_pos.x(), scene_pos.y(), 1, 1))
                 event.accept()
             else:
                 event.setDropAction(QtCore.Qt.DropAction.IgnoreAction)
-                print(f"WARNING: Unsupported drag event, tried: {event_mime_text}")
+                print(
+                    f"WARNING: Unsupported drag event, tried: {event_mime_text}")
         else:
             event.ignore()
             print("WARNING: Drag event did not contain data. Ignored.")
@@ -340,21 +355,22 @@ class EditorGraphicsView(QtWidgets.QGraphicsView):  # MARK: Editor
             self.focusObjectEvent.emit(FocusEvent(None, None))
         else:
             self.focusedObjectWidget = object
-            self.focusedObject = list(filter(lambda obj: obj.id == object.id and obj.type == object.type, self.objects))[0]
+            self.focusedObject = list(filter(
+                lambda obj: obj.id == object.id and obj.type == object.type, self.objects))[0]
             if not self.focusedObject:
-                raise RenderingException("ERROR: Object to focus is not in objects cache! Cannot focus.")
+                raise RenderingException(
+                    "ERROR: Object to focus is not in objects cache! Cannot focus.")
             self.focusObjectEvent.emit(FocusEvent(object.id, object.type))
         self.viewport().update()
 
-    # Add grid elements to the map
     # MARK: Render
-
+    # Add grid elements to the map
     def _render_element_object(self, element: Element) -> bool:
         # Create tile
-        tile = TileWidget(element.x * self.element_size, # x
-                          element.y * self.element_size, # y
-                          self.element_size, # w
-                          self.element_size, # h
+        tile = TileWidget(element.x * self.element_size,  # x
+                          element.y * self.element_size,  # y
+                          self.element_size,  # w
+                          self.element_size,  # h
                           tile_id=element.id,
                           background_image=element.background_image.data if element.background_image != None else None,
                           rotation=element.rotation)
@@ -394,14 +410,15 @@ class EditorGraphicsView(QtWidgets.QGraphicsView):  # MARK: Editor
 
     def _render_text_object(self, text: MapText) -> bool:
         # Create text widget
-        text_widget = TextWidget(text.x, # x
-                                 text.y, # y
+        text_widget = TextWidget(text.x,  # x
+                                 text.y,  # y
                                  1,
                                  1,
                                  text=text,
                                  rotation=text.rotation)
 
-        text_widget.focusEvent.connect(lambda: self._setFocusedObjectWidget(text_widget))
+        text_widget.focusEvent.connect(
+            lambda: self._setFocusedObjectWidget(text_widget))
         self.scene().addItem(text_widget)
         self.objectWidgets.append(text_widget)
 
@@ -412,7 +429,8 @@ class EditorGraphicsView(QtWidgets.QGraphicsView):  # MARK: Editor
             self._setFocusedObjectWidget(text_widget)
 
         # Handle focus
-        text_widget.focusEvent.connect(lambda: self._setFocusedObjectWidget(text_widget))
+        text_widget.focusEvent.connect(
+            lambda: self._setFocusedObjectWidget(text_widget))
         return gave_focus
 
     def render(self, objects: ObjectsList) -> None:
@@ -421,7 +439,7 @@ class EditorGraphicsView(QtWidgets.QGraphicsView):  # MARK: Editor
         self.objects = objects
         self.objectWidgets = []
         gave_focus = False
-        
+
         # Render all objects
         for object in objects:
             if object.type == "element":

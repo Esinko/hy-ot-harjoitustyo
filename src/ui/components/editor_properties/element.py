@@ -45,7 +45,8 @@ class ElementPropertiesWidget(EditorSidebar):
             self.background_input.setText("Select Image")
         self.delete_button.setDisabled(element is None)
         self.rotation_dial.setDisabled(element is None)
-        self.rotation_dial.setValue(element.rotation + 180 if element is not None else 180)
+        self.rotation_dial.setValue(
+            element.rotation + 180 if element is not None else 180)
 
         # Set target last to prevent emission of changed events
         self.target_element = element
@@ -129,7 +130,7 @@ class ElementPropertiesWidget(EditorSidebar):
         self.rotation_dial = DialInputWidget()
         self.rotation_dial.valueChanged.connect(self._edit_rotation)
         self.sidebar_layout.addWidget(self.rotation_dial)
-        
+
         # Delete element button
         self.delete_button = StandardButtonWidget("Delete Element")
         self.delete_button.clicked.connect(self._delete)

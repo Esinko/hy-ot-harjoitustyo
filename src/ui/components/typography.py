@@ -3,16 +3,16 @@ from PySide6 import QtWidgets, QtGui, QtCore
 
 class GraphicsLabel(QtWidgets.QGraphicsTextItem):
     def __init__(
-            self,
-            backgroundColor: QtGui.QColor,
-            color: QtGui.QColor = "black",
-            text: str = "",
-            font: QtGui.QFont | None = None
-        ):
+        self,
+        backgroundColor: QtGui.QColor,
+        color: QtGui.QColor = "black",
+        text: str = "",
+        font: QtGui.QFont | None = None
+    ):
         super().__init__(text)
         self.backgroundColor = backgroundColor
         self.text = text
-        if font: # Check here to not break C++ bindings
+        if font:  # Check here to not break C++ bindings
             self.setFont(font)
         self.setDefaultTextColor(color)
 

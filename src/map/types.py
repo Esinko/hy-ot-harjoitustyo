@@ -103,9 +103,11 @@ class MapMetadataMalformedException(Exception):
         super().__init__(
             f"Metadata of '{map_file}' is malformed. Cannot read map.")
 
+
 class TextNotFoundException(Exception):
     def __init__(self, text_id):
         super().__init__(f"Text for id '{text_id}' not found.")
+
 
 class TextEditable(TypedDict):
     id: int
@@ -116,6 +118,7 @@ class TextEditable(TypedDict):
     x: int
     y: int
     rotation: int
+
 
 class MapText:
     id: int
@@ -128,8 +131,8 @@ class MapText:
     y: int
     rotation: int
 
-    def __init__(self, id, name, value, color, font_size, x, y, rotation):
-        self.id = id
+    def __init__(self, text_id, name, value, color, font_size, x, y, rotation):
+        self.id = text_id
         self.name = name
         self.value = value
         self.color = color
@@ -149,4 +152,3 @@ class MapText:
             "y": self.y,
             "rotation": self.rotation
         }
-    

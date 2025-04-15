@@ -1,6 +1,9 @@
 from PySide6 import QtWidgets, QtGui, QtCore
 from map.abstract import Element
-from typing import List
+from typing import List, Literal, Union
+from map.types import MapText
+from ui.components.editor_object import EditorObject
+from ui.components.editor_properties import element
 from ui.components.typography import GraphicsLabel
 
 
@@ -27,23 +30,33 @@ class MoveElementEvent:
         self.y = y
         self.id = id
 
+class AddTextEvent:
+    x: int
+    y: int
 
-class FocusElementEvent:
-    id: int | None
+    def __init__(self, x, y, width, height):
+        self.x = x
+        self.y = y
 
-    def __init__(self, id):
-        self.id = id
-
-
-class TileWidget(QtCore.QObject, QtWidgets.QGraphicsRectItem):  # MARK: Tile
-    focusEvent = QtCore.Signal(FocusElementEvent)
+class MoveTextEvent:
     id: int
-    edit_circle_radius = 32
+    x: int
+    y: int
 
-    def __init__(self, *args, id: int, background_image: bytes | None, rotation: int, **kwargs):
-        QtCore.QObject.__init__(self)
-        QtWidgets.QGraphicsRectItem.__init__(self, *args, **kwargs)
+    def __init__(self, id, x, y):
+        self.x = x
+        self.y = y
         self.id = id
+
+class RenderingException(Exception):
+    def __init__(self, object):
+        super().__init__(f"Failed to render object: {object.to_dict()}")
+
+
+class TileWidget(EditorObject):  # MARK: Tile
+    highlight: QtWidgets.QGraphicsRectItem | None = None
+    def __init__(self, *args, tile_id: int, background_image: bytes | None, rotation: int):
+        super().__init__(*args, object_id=tile_id, type="element")
 
         # Render background or default color
         if background_image:
@@ -67,91 +80,86 @@ class TileWidget(QtCore.QObject, QtWidgets.QGraphicsRectItem):  # MARK: Tile
         else:
             self.setBrush(QtGui.QBrush(QtGui.QColor("#8F9092")))
 
-        # Mouse config and zValue
-        self.setAcceptedMouseButtons(
-            QtCore.Qt.MouseButton.LeftButton | QtCore.Qt.MouseButton.RightButton)
-        self.setFlag(QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsFocusable)
-        self.setZValue(1)
-
     # Paint the tile and add outline when focused
     def paint(self, painter, option, widget):
         super().paint(painter, option, widget)
-        if self.hasFocus():
-            # Add outline
-            self.setZValue(100)  # So outline is on top of other tiles
+
+        if self.hasFocus() and not self.highlight:
+            # Add outline when focused
+            self.setZValue(100)
             pen = QtGui.QPen(QtGui.QColor("#F89B2E"), 2)
             pen.setCosmetic(True)
             painter.setPen(pen)
             painter.setBrush(QtCore.Qt.BrushStyle.NoBrush)
             painter.drawRect(self.rect())
 
-            # Draw draggable circle in center
-            center = self.rect().center()
-            fill = QtGui.QColor("#FFFFFF")
-            fill.setAlpha(184)
-            painter.setBrush(QtGui.QBrush(fill))
-            painter.setPen(QtGui.QPen(QtGui.QColor("white"), 4))
-            painter.drawEllipse(
-                center, self.edit_circle_radius, self.edit_circle_radius)
-        else:
-            self.setZValue(1)
 
-    # Only allow right mouse button to set focus
-    def focusInEvent(self, event: QtGui.QFocusEvent):
-        if QtWidgets.QApplication.mouseButtons() != QtCore.Qt.MouseButton.RightButton and event.reason() != QtCore.Qt.FocusReason.OtherFocusReason:
-            self.clearFocus()
-            event.ignore()
-            return
-        self.focusEvent.emit(FocusElementEvent(self.id))
-        super().focusInEvent(event)
+class TextWidget(EditorObject):  # MARK: Text
+    text_label: GraphicsLabel
+    text: MapText
 
-    # Only remove focus if clicked somewhere else
-    def focusOutEvent(self, event: QtGui.QFocusEvent):
-        # Ignore losing focus if it's not to another TileWidget
-        if isinstance(QtWidgets.QApplication.focusWidget(), TileWidget):
-            super().focusOutEvent(event)
-        else:
-            event.ignore()
+    def __init__(self, *args, text: MapText, rotation: int):
+        super().__init__(*args, object_id=text.id, type="text")
+        self.setZValue(2)
+        self.text = text
 
-    # Handle dragging to other position
-    def mousePressEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent):
-        if self.hasFocus() and event.button() == QtCore.Qt.MouseButton.LeftButton:
-            center = self.rect().center()
-            dist = (event.pos() - center).manhattanLength()
+        # Create text element as label
+        text_font = QtGui.QFont()
+        text_font.setPointSize(text.font_size)
+        self.text_label = GraphicsLabel(
+            text=text.value, font=text_font, color=text.color, backgroundColor="transparent")
+        self.text_label.setZValue(80)
+        self.text_label.document().adjustSize()
+        self.text_label.setPos(text.x, text.y)
+        self.text_label.setParentItem(self)
+        
+        # Properly scale element based on text size
+        current_rect = self.rect()
+        text_rect = self.text_label.boundingRect()
+        self.setRect(current_rect.x(), current_rect.y(), text_rect.width(), text_rect.height())
+        
 
-            # Check if we clicked inside the circle
-            if dist <= self.edit_circle_radius:
-                # Disable view dragging
-                view = self.scene().views()[0]
-                view.setDragMode(QtWidgets.QGraphicsView.DragMode.NoDrag)
+    # Paint the tile and add outline when focused
+    def paint(self, painter, option, widget):
+        super().paint(painter, option, widget)
 
-                drag = QtGui.QDrag(self)
-                mime = QtCore.QMimeData()
-                mime.setText(f"BDM; move_tile {self.id}")
-                drag.setMimeData(mime)
-                # TODO: Update preview
-                pixmap = QtGui.QPixmap(32, 32)
-                pixmap.fill(QtGui.QColor("#8F9092"))
-                drag.setPixmap(pixmap)
-                drag.setHotSpot(QtCore.QPoint(16, 16))
-                drag.exec(QtCore.Qt.DropAction.CopyAction)
+        # Create text border
+        pen = QtGui.QPen(QtGui.QColor("#000"), 2, QtCore.Qt.DashLine)
+        pen.setCosmetic(True)
+        painter.setPen(pen)
+        painter.setBrush(QtCore.Qt.BrushStyle.NoBrush)
+        painter.drawRect(self.rect())
 
-                # Restore drag mode
-                view.setDragMode(
-                    QtWidgets.QGraphicsView.DragMode.ScrollHandDrag)
-                event.accept()
-                return
-        super().mousePressEvent(event)
+        if self.hasFocus():
+            # Add outline when focused
+            self.setZValue(100)
+            pen = QtGui.QPen(QtGui.QColor("#F89B2E"), 2)
+            pen.setCosmetic(True)
+            painter.setPen(pen)
+            painter.setBrush(QtCore.Qt.BrushStyle.NoBrush)
+            painter.drawRect(self.rect())
 
+ObjectsList = List[Union[Element, MapText]]
+
+# NOTE: We need this here to avoid a circular dependency for now. Move to own file later.
+class FocusEvent:
+    id: int | None
+    type = Literal["element", "text", None]
+
+    def __init__(self, id: int, type: Literal["element", "text"]):
+        self.id = id
+        self.type = type
 
 class EditorGraphicsView(QtWidgets.QGraphicsView):  # MARK: Editor
     addElementEvent = QtCore.Signal(AddElementEvent)
     moveElementEvent = QtCore.Signal(MoveElementEvent)
-    focusElementEvent = QtCore.Signal(FocusElementEvent)
-    elements: List[Element] = []
-    tileWidgets: List[TileWidget] = []
-    focusedTileWidget: TileWidget | None = None
-    focusedTileId: int | None = None
+    addTextEvent = QtCore.Signal(AddTextEvent)
+    moveTextEvent = QtCore.Signal(MoveTextEvent)
+    focusObjectEvent = QtCore.Signal(FocusEvent)
+    objects: ObjectsList = []
+    objectWidgets: List[Union[TileWidget, TextWidget]] = []
+    focusedObjectWidget: TileWidget | TextWidget | None = None
+    focusedObject: MapText | Element | None = None
 
     def __init__(self, is_preview: bool = False):
         super().__init__()
@@ -162,6 +170,7 @@ class EditorGraphicsView(QtWidgets.QGraphicsView):  # MARK: Editor
         self.setDragMode(QtWidgets.QGraphicsView.DragMode.ScrollHandDrag)
         self.setAcceptDrops(True)
         self.setBackgroundBrush(QtGui.QBrush(QtGui.QColor("#393939")))
+
         # Large space for "infinite" area
         self.setSceneRect(-10000, -10000, 20000, 20000)
         if not is_preview:
@@ -219,12 +228,20 @@ class EditorGraphicsView(QtWidgets.QGraphicsView):  # MARK: Editor
         self.scale(factor, factor)
         self.scale_factor = new_scale
 
+    # Remove focus with ESC
+    def keyPressEvent(self, event: QtGui.QKeyEvent):
+        if event.key() == QtCore.Qt.Key_Escape:
+            self._setFocusedObjectWidget(None)
+            self.render(self.objects)
+        else:
+            super().keyPressEvent(event)
+
     # Things to handle on each render that are not default QT drawing stuff
     def drawForeground(self, painter: QtGui.QPainter, rect: QtCore.QRectF):
         # Make sure correct tile has focus
-        if self.focusedTileWidget and not self.focusedTileWidget.hasFocus():
+        if self.focusedObject and not self.focusedObjectWidget.hasFocus():
             QtCore.QTimer.singleShot(
-                0, lambda: self.focusedTileWidget.setFocus(QtCore.Qt.OtherFocusReason))
+                0, lambda: self.focusedObjectWidget.setFocus(QtCore.Qt.OtherFocusReason))
 
         super().drawForeground(painter, rect)
 
@@ -253,7 +270,7 @@ class EditorGraphicsView(QtWidgets.QGraphicsView):  # MARK: Editor
 
     # Handle dropped elements
     def _canDrag(self, event: QtGui.QDragEnterEvent | QtGui.QDragMoveEvent):
-        if event.mimeData().hasText() and event.mimeData().text().startswith("BDM; "):  # Accept only add tiles for now
+        if event.mimeData().hasText() and event.mimeData().text().startswith("BDM; "):
             event.setDropAction(QtCore.Qt.DropAction.CopyAction)
             event.accept()
         else:
@@ -264,86 +281,162 @@ class EditorGraphicsView(QtWidgets.QGraphicsView):  # MARK: Editor
 
     def dragMoveEvent(self, event: QtGui.QDragMoveEvent): self._canDrag(event)
 
+    # MARK: Drag Event
     # Triggered when user has picked the location
     def dropEvent(self, event: QtGui.QDropEvent):
         if event.mimeData().hasText():
-            if event.mimeData().text() == "BDM; new_tile":
-                event.setDropAction(QtCore.Qt.DropAction.CopyAction)
-                pos = event.position().toPoint()
-                scene_pos = self.mapToScene(pos)
-                self.addElementEvent.emit(AddElementEvent(int(scene_pos.x(
-                ) // self.element_size), int(scene_pos.y() // self.element_size), 1, 1))
+            event_mime_text = event.mimeData().text()
+            event.setDropAction(QtCore.Qt.DropAction.CopyAction)
+            pos = event.position().toPoint()
+            scene_pos = self.mapToScene(pos)
+
+            if event_mime_text == "BDM; new_element":
+                tile_x = int(scene_pos.x() //
+                             self.element_size)
+                tile_y = int(scene_pos.y() //
+                             self.element_size)
+                self.addElementEvent.emit(AddElementEvent(tile_x, tile_y, 1, 1))
                 event.accept()
-            elif event.mimeData().text().startswith("BDM; move_tile "):
-                target_tile = int(event.mimeData().text().split(" ")[2])
-                event.setDropAction(QtCore.Qt.DropAction.CopyAction)
-                pos = event.position().toPoint()
-                scene_pos = self.mapToScene(pos)
-                self.moveElementEvent.emit(MoveElementEvent(target_tile, int(
-                    scene_pos.x() // self.element_size), int(scene_pos.y() // self.element_size)))
+            elif event_mime_text.startswith("BDM; move_element "):
+                target_tile = int(event_mime_text.split(" ")[2])
+                tile_x = int(scene_pos.x() //
+                             self.element_size)
+                tile_y = int(scene_pos.y() //
+                             self.element_size)
+                self.moveElementEvent.emit(MoveElementEvent(target_tile, tile_x, tile_y))
                 event.accept()
+            elif event_mime_text.startswith("BDM; move_text "):
+                target_text = int(event_mime_text.split(" ")[2])
+
+                # Offset point to text center
+                text_widget: TextWidget | None = list(filter(lambda obj: obj.id == target_text and obj.type == "text", self.objectWidgets))[0]
+                if not text_widget:
+                    raise RenderingException("ERROR: Unable to resolve widget for text to be moved!")
+                
+                text_rect = text_widget.rect()
+                centered_x = scene_pos.x() - text_rect.width() / 2
+                centered_y = scene_pos.y() - text_rect.height() / 2
+
+                self.moveTextEvent.emit(MoveTextEvent(target_text, centered_x, centered_y))
+                event.accept()
+            elif event_mime_text == "BDM; new_text":
+                text_x = int(scene_pos.x() //
+                             self.element_size)
+                text_y = int(scene_pos.y() //
+                             self.element_size)
+                self.addTextEvent.emit(AddTextEvent(text_x, text_y, 1, 1))
+                event.accept()
+            else:
+                event.setDropAction(QtCore.Qt.DropAction.IgnoreAction)
+                print(f"WARNING: Unsupported drag event, tried: {event_mime_text}")
         else:
             event.ignore()
+            print("WARNING: Drag event did not contain data. Ignored.")
 
-    # Set focused tile in the editor
-    def _setFocusedTile(self, tile: TileWidget | None):
-        if tile == None:
-            self.focusedTileWidget = None
-            self.focusedTileId = None
-            self.focusElementEvent.emit(FocusElementEvent(None))
+    # MARK: Set focus
+    # Set focused object in the editor
+    def _setFocusedObjectWidget(self, object: TileWidget | TextWidget | None):
+        if object == None:
+            self.focusedObject = None
+            self.focusedObjectWidget = None
+            self.focusObjectEvent.emit(FocusEvent(None, None))
         else:
-            self.focusedTileWidget = tile
-            self.focusedTileId = tile.id
-            self.focusElementEvent.emit(FocusElementEvent(tile.id))
+            self.focusedObjectWidget = object
+            self.focusedObject = list(filter(lambda obj: obj.id == object.id and obj.type == object.type, self.objects))[0]
+            if not self.focusedObject:
+                raise RenderingException("ERROR: Object to focus is not in objects cache! Cannot focus.")
+            self.focusObjectEvent.emit(FocusEvent(object.id, object.type))
         self.viewport().update()
 
     # Add grid elements to the map
     # MARK: Render
-    def render(self, elements: List[Element]):
-        self.scene().clear()
-        self.elements = elements
-        self.tileWidgets = []
 
+    def _render_element_object(self, element: Element) -> bool:
+        # Create tile
+        tile = TileWidget(element.x * self.element_size, # x
+                          element.y * self.element_size, # y
+                          self.element_size, # w
+                          self.element_size, # h
+                          tile_id=element.id,
+                          background_image=element.background_image.data if element.background_image != None else None,
+                          rotation=element.rotation)
+
+        tile.focusEvent.connect(lambda: self._setFocusedObjectWidget(tile))
+        self.scene().addItem(tile)
+        self.objectWidgets.append(tile)
+
+        # Update in focus tile
         gave_focus = False
+        if self.focusedObject != None and element.id == self.focusedObject.id and self.focusedObject.type == "element":
+            gave_focus = True
+            self._setFocusedObjectWidget(tile)
 
-        for element in elements:
-            # Create tile
-            tile = TileWidget(element.x * self.element_size, element.y *
-                              self.element_size, self.element_size, self.element_size,
-                              id=element.id, background_image=element.background_image.data if element.background_image != None else None,
-                              rotation=element.rotation)
+        # Create tile name
+        label = GraphicsLabel(
+            text=element.name, backgroundColor="#000", color="white")
+        label.setParentItem(tile)
+        label.setPos(
+            (element.x * self.element_size) + 10,
+            (element.y * self.element_size) + 10
+        )
 
-            # The parameter magic here forces python to use the tile from this iteration of the loop!
-            tile.focusEvent.connect(lambda _, t=tile: self._setFocusedTile(t))
-            self.scene().addItem(tile)
-            self.tileWidgets.append(tile)
+        # Create tile position
+        label = GraphicsLabel(
+            text=f"x: {element.x}, y: {element.y}", backgroundColor="#000", color="white")
+        label.setParentItem(tile)
+        label_rect = label.boundingRect()
+        label.setPos(
+            (element.x * self.element_size) +
+            self.element_size - label_rect.width() - 10,
+            (element.y * self.element_size) +
+            self.element_size - label_rect.height() - 10
+        )
 
-            # Update in focus tile
-            if element.id == self.focusedTileId:
-                gave_focus = True
-                self._setFocusedTile(tile)
+        return gave_focus
 
-            # Create tile name
-            label = GraphicsLabel(
-                text=element.name, backgroundColor="#000", color="white")
-            label.setParentItem(tile)
-            label.setPos(
-                (element.x * self.element_size) + 10,
-                (element.y * self.element_size) + 10
-            )
+    def _render_text_object(self, text: MapText) -> bool:
+        # Create text widget
+        text_widget = TextWidget(text.x, # x
+                                 text.y, # y
+                                 1,
+                                 1,
+                                 text=text,
+                                 rotation=text.rotation)
 
-            # Create tile position
-            label = GraphicsLabel(
-                text=f"x: {element.x}, y: {element.y}", backgroundColor="#000", color="white")
-            label.setParentItem(tile)
-            label_rect = label.boundingRect()
-            label.setPos(
-                (element.x * self.element_size) +
-                self.element_size - label_rect.width() - 10,
-                (element.y * self.element_size) +
-                self.element_size - label_rect.height() - 10
-            )
+        text_widget.focusEvent.connect(lambda: self._setFocusedObjectWidget(text_widget))
+        self.scene().addItem(text_widget)
+        self.objectWidgets.append(text_widget)
+
+        # Update in focus text
+        gave_focus = False
+        if self.focusedObject != None and text.id == self.focusedObject.id and self.focusedObject.type == "text":
+            gave_focus = True
+            self._setFocusedObjectWidget(text_widget)
+
+        # Handle focus
+        text_widget.focusEvent.connect(lambda: self._setFocusedObjectWidget(text_widget))
+        return gave_focus
+
+    def render(self, objects: ObjectsList) -> None:
+        # Clear the scene and canvas
+        self.scene().clear()
+        self.objects = objects
+        self.objectWidgets = []
+        gave_focus = False
+        
+        # Render all objects
+        for object in objects:
+            if object.type == "element":
+                did_focus = self._render_element_object(object)
+                if did_focus:
+                    gave_focus = True
+            elif object.type == "text":
+                did_focus = self._render_text_object(object)
+                if did_focus:
+                    gave_focus = True
+            else:
+                raise RenderingException(object)
 
         # If nothing gained focus, clear it
         if not gave_focus:
-            self._setFocusedTile(None)
+            self._setFocusedObjectWidget(None)

@@ -1,4 +1,5 @@
 from PySide6 import QtWidgets, QtCore
+from ui.components.editor_sidebar import EditorSidebar
 from ui.components.inputs import TextInputWidget, ImageFileInputWidget, DialInputWidget
 from ui.components.buttons import StandardButtonWidget
 from map.abstract import Element, ElementEditable
@@ -20,13 +21,14 @@ class RemoveElementEvent:
         self.id = element_id
 
 
-class EditorPropertiesWidget(QtWidgets.QWidget):
+class ElementPropertiesWidget(EditorSidebar):
     editElementEvent = QtCore.Signal(EditElementEvent)
     removeElementEvent = QtCore.Signal(RemoveElementEvent)
     target_element: Element | None = None
     name_input: TextInputWidget
     background_input: ImageFileInputWidget
     delete_button: StandardButtonWidget
+    rotation_dial: DialInputWidget
 
     def setElement(self, element: Element | None):
         # Disable fields
@@ -43,10 +45,16 @@ class EditorPropertiesWidget(QtWidgets.QWidget):
             self.background_input.setText("Select Image")
         self.delete_button.setDisabled(element is None)
         self.rotation_dial.setDisabled(element is None)
-        self.rotation_dial.setValue(element.rotation + 180)
+        self.rotation_dial.setValue(element.rotation + 180 if element is not None else 180)
 
         # Set target last to prevent emission of changed events
         self.target_element = element
+
+        # If element is none, hide panel
+        if element is None:
+            self.hide()
+        else:
+            self.show()
 
     def _edit_name(self):
         if not self.target_element:
@@ -82,28 +90,17 @@ class EditorPropertiesWidget(QtWidgets.QWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent=parent)
-        self.setAttribute(QtCore.Qt.WidgetAttribute.WA_StyledBackground, True)
-        self.setObjectName("editorSidebar")
-        self.setFixedWidth(260)
-        self.setStyleSheet("""
-            #editorSidebar {
-                background-color: #727272;
-                border-left: 1px solid black;              
-            }
-        """)
-        sidebar_layout = QtWidgets.QVBoxLayout(self)
-        sidebar_layout.setAlignment(QtCore.Qt.AlignmentFlag.AlignTop)
-        sidebar_layout.setSpacing(0)
+        self.hide()
 
         # Element name
         element_name_label = QtWidgets.QLabel("Tile Name:")
         self.name_input = TextInputWidget()
         self.name_input.textChanged.connect(self._edit_name)
         self.name_input.setDisabled(True)
-        sidebar_layout.addWidget(element_name_label)
-        sidebar_layout.addSpacerItem(QtWidgets.QSpacerItem(0, 4))
-        sidebar_layout.addWidget(self.name_input)
-        sidebar_layout.addSpacerItem(QtWidgets.QSpacerItem(0, 8))
+        self.sidebar_layout.addWidget(element_name_label)
+        self.sidebar_layout.addSpacerItem(QtWidgets.QSpacerItem(0, 4))
+        self.sidebar_layout.addWidget(self.name_input)
+        self.sidebar_layout.addSpacerItem(QtWidgets.QSpacerItem(0, 8))
 
         # Element background
         element_background_label = QtWidgets.QLabel("Tile Image:")
@@ -111,21 +108,21 @@ class EditorPropertiesWidget(QtWidgets.QWidget):
         self.background_input.setDisabled(True)
         self.background_input.selectFileEvent.connect(
             self._edit_background_image)
-        sidebar_layout.addWidget(element_background_label)
-        sidebar_layout.addSpacerItem(QtWidgets.QSpacerItem(0, 4))
-        sidebar_layout.addWidget(self.background_input)
-        sidebar_layout.addSpacerItem(QtWidgets.QSpacerItem(0, 8))
+        self.sidebar_layout.addWidget(element_background_label)
+        self.sidebar_layout.addSpacerItem(QtWidgets.QSpacerItem(0, 4))
+        self.sidebar_layout.addWidget(self.background_input)
+        self.sidebar_layout.addSpacerItem(QtWidgets.QSpacerItem(0, 8))
 
         # Rotation dial
         element_rotation_label = QtWidgets.QLabel("Content Rotation:")
-        sidebar_layout.addWidget(element_rotation_label)
-        sidebar_layout.addSpacerItem(QtWidgets.QSpacerItem(0, 4))
+        self.sidebar_layout.addWidget(element_rotation_label)
+        self.sidebar_layout.addSpacerItem(QtWidgets.QSpacerItem(0, 4))
         self.rotation_dial = DialInputWidget()
         self.rotation_dial.valueChanged.connect(self._edit_rotation)
-        sidebar_layout.addWidget(self.rotation_dial)
+        self.sidebar_layout.addWidget(self.rotation_dial)
         
         # Delete element button
         self.delete_button = StandardButtonWidget("Delete Element")
         self.delete_button.clicked.connect(self._delete)
-        sidebar_layout.addStretch()
-        sidebar_layout.addWidget(self.delete_button)
+        self.sidebar_layout.addStretch()
+        self.sidebar_layout.addWidget(self.delete_button)

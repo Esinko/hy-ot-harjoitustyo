@@ -63,5 +63,27 @@ sql_table = {
 
     "remove_asset": "DELETE FROM Assets WHERE id = ?",
 
-    "asset_exists": "SELECT EXISTS (SELECT id FROM Assets WHERE id = ?)"
+    "asset_exists": "SELECT EXISTS (SELECT id FROM Assets WHERE id = ?)",
+
+    "create_text": "INSERT INTO Text (name, value, x, y) VALUES (?, ?, ?, ?)",
+
+    "get_all_text": "SELECT id, name, value, color, font_size, x, y, rotation FROM Text",
+
+    "get_text": "SELECT id, name, value, color, font_size, x, y, rotation FROM Text WHERE id = ?",
+
+    "edit_text": """
+        UPDATE Text SET
+            name = ?,
+            value = ?,
+            color = ?,
+            font_size = ?,
+            x = ?,
+            y = ?,
+            rotation = ?
+        WHERE id = ?
+    """,
+
+    "remove_text": "DELETE FROM Text WHERE id = ?",
+
+    "text_exists": "SELECT EXISTS (SELECT id FROM Text WHERE id = ?)"
 }

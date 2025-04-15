@@ -23,3 +23,15 @@ CREATE TABLE Elements (
     background_image INTEGER REFERENCES Assets(id) ON DELETE CASCADE DEFAULT NULL,
     background_color TEXT
 );
+
+-- Map text
+CREATE TABLE Text (
+    id INTEGER PRIMARY KEY,
+    name TEXT,
+    value TEXT,
+    color TEXT NOT NULL DEFAULT '#000',
+    font_size INT NOT NULL DEFAULT 36,
+    x INTEGER NOT NULL,
+    y INTEGER NOT NULL,
+    rotation INTEGER NOT NULL DEFAULT 0
+);

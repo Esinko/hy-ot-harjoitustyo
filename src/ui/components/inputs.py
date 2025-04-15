@@ -21,6 +21,24 @@ class TextInputWidget(QtWidgets.QLineEdit):
             }
         """)
 
+class TextAreaInputWidget(QtWidgets.QTextEdit):
+    def __init__(self, parent=None):
+        super().__init__(parent=parent)
+        self.setLineWrapMode(QtWidgets.QTextEdit.NoWrap)
+        self.setStyleSheet("""
+            QTextEdit {
+                color: black;
+                background: qlineargradient(x1:0, y1:1, x2:0, y2:0,
+                                            stop:0 #B0B0B0, stop:1 #999999);
+                border: 1px solid #393939;
+                border-radius: 4px;
+                padding: 4px;
+            }
+            QTextEdit:hover {
+                border-color: qlineargradient(x1:0, y1:1, x2:0, y2:0,
+                                            stop:0 #FDA239, stop:1 #F0851B);
+            }
+        """)
 
 class SelectFileEvent:
     file: Path
@@ -97,3 +115,23 @@ class DialInputWidget(QtWidgets.QWidget):
     # Standard for dial
     def setDisabled(self, disabled: bool):
         self.dial.setDisabled(disabled)
+
+class InputGroupWidget(QtWidgets.QFrame):
+    def __init__(self):
+        super().__init__()
+        button_layout = QtWidgets.QHBoxLayout()
+        button_layout.setSpacing(5)
+        self.setObjectName("inputGroup")
+        self.setAutoFillBackground(True)
+        self.setStyleSheet("""
+            #inputGroup {
+                padding: 0px;
+                border: 0px;
+            }
+        """)
+        self.setContentsMargins(0, 0, 0, 0)
+        self.setLayout(button_layout)
+
+    # Standard from layout
+    def addWidget(self, widget):
+        self.layout().addWidget(widget)

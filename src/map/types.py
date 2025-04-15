@@ -21,7 +21,7 @@ class Asset:  # MARK: Asset
         return {
             "id": self.id,
             "name": self.name or "",
-            "data": list(self.data)
+            "data": list(self.data) if self.data else []
         }
 
 
@@ -44,6 +44,7 @@ class ElementEditable(TypedDict):
 
 class Element:  # MARK: Element
     id: int
+    type = "element"
     name: str | None
     x: int
     y: int
@@ -101,3 +102,51 @@ class MapMetadataMalformedException(Exception):
     def __init__(self, map_file):
         super().__init__(
             f"Metadata of '{map_file}' is malformed. Cannot read map.")
+
+class TextNotFoundException(Exception):
+    def __init__(self, text_id):
+        super().__init__(f"Text for id '{text_id}' not found.")
+
+class TextEditable(TypedDict):
+    id: int
+    name: str | None
+    value: str | None
+    color: str
+    font_size: int
+    x: int
+    y: int
+    rotation: int
+
+class MapText:
+    id: int
+    type = "text"
+    name: str | None
+    value: str | None
+    color: str
+    font_size: int
+    x: int
+    y: int
+    rotation: int
+
+    def __init__(self, id, name, value, color, font_size, x, y, rotation):
+        self.id = id
+        self.name = name
+        self.value = value
+        self.color = color
+        self.font_size = font_size
+        self.x = x
+        self.y = y
+        self.rotation = rotation
+
+    def to_dict(self) -> TextEditable:
+        return {
+            "id": self.id,
+            "name": self.name or "",
+            "value": self.value or "",
+            "color": self.color or "#000",
+            "font_size": self.font_size or 24,
+            "x": self.x,
+            "y": self.y,
+            "rotation": self.rotation
+        }
+    

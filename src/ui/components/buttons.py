@@ -1,7 +1,7 @@
+from pathlib import Path
 from PySide6 import QtWidgets, QtGui, QtCore
 from PySide6.QtSvgWidgets import QSvgWidget  # This is required because QT
 from os.path import abspath
-
 
 class AddObjectButtonWidget(QtWidgets.QPushButton):
     mime_text: str = ""
@@ -94,9 +94,42 @@ class RenameButtonWidget(IconButtonWidget):
         self.setIconSize(QtCore.QSize(box_size - 8, box_size - 8))
         self.setFixedSize(box_size, box_size)
 
+class SelectPathEvent:
+    path: Path
+
+    def __init__(self, selected_path):
+        # TODO: Handle read issue here?
+        self.path = Path(selected_path)
+
+class ExportMapButton(IconButtonWidget):
+    # TODO: Convert to group, add filename in read-only text line, then add X and select buttons on the right
+    selectPathEvent = QtCore.Signal(SelectPathEvent)
+    placeholder_name: str
+
+    def _select_file(self):
+        selected_path, _ = QtWidgets.QFileDialog.getSaveFileName(
+            None,
+            "Select Location",
+            abspath("./untitled.dmap")
+                if not self.placeholder_name else
+                abspath(f"./{self.placeholder_name}"),
+            "Maps (*.dmap)"
+        )
+        self.selectPathEvent.emit(SelectPathEvent(selected_path))
+
+    def __init__(self, box_size: int = 32, parent=None, placeholder_name = ""):
+        super().__init__(parent=parent)
+        icon = QtGui.QIcon(abspath("./ui/icons/share.svg"))
+        self.setIcon(icon)
+        self.placeholder_name = placeholder_name
+        if box_size < 9:
+            box_size = 9
+        self.setIconSize(QtCore.QSize(box_size - 8, box_size - 8))
+        self.setFixedSize(box_size, box_size)
+        self.clicked.connect(self._select_file)
 
 class StandardButtonWidget(QtWidgets.QPushButton):
-    def __init__(self, text: str, parent=None):
+    def __init__(self, text: str, icon: QtGui.QIcon = None, parent=None):
         super().__init__(parent=parent)
         self.setStyleSheet("""
             QPushButton {
@@ -105,7 +138,8 @@ class StandardButtonWidget(QtWidgets.QPushButton):
                                             stop:0 #373737, stop:1 #535353);
                 border: 1px solid #292929;
                 border-radius: 4px;
-                padding: 4px;
+                padding: 4px 8px;
+                text-align: left;
             }
             QPushButton:hover {
                 background: qlineargradient(x1:0, y1:1, x2:0, y2:0,
@@ -113,4 +147,40 @@ class StandardButtonWidget(QtWidgets.QPushButton):
             }
         """)
         self.setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.PointingHandCursor))
-        self.setText(text)
+        if icon:
+            self.setIcon(icon)
+            self.setIconSize(QtCore.QSize(16, 16))
+            self.setText(f"  {text}")
+        else:
+            self.setText(text)
+
+# Copy, to avoid a circular import
+# TODO: Create a dedicated "events" file?
+class SelectFileEvent:
+    file: Path
+    name: str
+    data: bytes
+
+    def __init__(self, file_path):
+        # TODO: Handle read issue here?
+        self.file = Path(file_path)
+        self.data = self.file.read_bytes()
+        self.name = self.file.name
+
+class ImportMapButton(StandardButtonWidget):
+    # TODO: Convert to group, add filename in read-only text line, then add X and select buttons on the right
+    selectFileEvent = QtCore.Signal(SelectFileEvent)
+
+    def _select_file(self):
+        file_path, _ = QtWidgets.QFileDialog.getOpenFileName(
+            None,
+            "Select Map",
+            "",
+            "Maps (*.dmap)"
+        )
+        if file_path:
+            self.selectFileEvent.emit(SelectFileEvent(file_path))
+
+    def __init__(self, parent=None):
+        super().__init__(text="Import Map", parent=parent)
+        self.clicked.connect(self._select_file)

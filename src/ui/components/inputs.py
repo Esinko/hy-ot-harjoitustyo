@@ -66,12 +66,12 @@ class ImageFileInputWidget(StandardButtonWidget):
             "",
             "Images (*.png *.jpg *.jpeg)"
         )
-        self.selectFileEvent.emit(SelectFileEvent(file_path))
+        if file_path:
+            self.selectFileEvent.emit(SelectFileEvent(file_path))
 
     def __init__(self, parent=None):
         super().__init__(text="Select Image", parent=parent)
         self.clicked.connect(self._select_file)
-
 
 class DialInputWidget(QtWidgets.QWidget):
     valueChanged = QtCore.Signal(int)
@@ -127,6 +127,7 @@ class InputGroupWidget(QtWidgets.QFrame):
         super().__init__()
         button_layout = QtWidgets.QHBoxLayout()
         button_layout.setSpacing(5)
+        button_layout.setContentsMargins(0, 0, 0, 0)
         self.setObjectName("inputGroup")
         self.setAutoFillBackground(True)
         self.setStyleSheet("""

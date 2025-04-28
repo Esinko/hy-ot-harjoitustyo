@@ -4,12 +4,14 @@ from os.path import join
 from types import FunctionType
 from sqlite3 import Connection, connect, Cursor
 from traceback import print_exception
+from uuid import uuid4
 from map.sql import sql_table
 from map.types import (
     Element,
     Asset,
     ElementEditable,
     ElementNotFoundException,
+    InvalidPathException,
     MapMetadataMalformedException,
     AssetNotFoundException,
     MapText,
@@ -313,6 +315,39 @@ class MapStore:  # MARK: MapStore
             return opened_map
 
         return None  # Fallback
+    
+    # Export a map to a specific location
+    def export(self, map: Map, location: str):
+        try:
+            target_location = Path(location)
+        except TypeError:
+            raise InvalidPathException(location)
+        
+        # Copy map to target
+        target_location.write_bytes(map.map_file.read_bytes())
+
+    # Add a map to the map store from a specified location
+    def add(self, location: str) -> Map | None:
+        try:
+            map_file = Path(location)
+        except TypeError:
+            raise InvalidPathException(location)
+        
+        # Try to load the map
+        try:
+            loaded_map = Map(map_file)
+            loaded_map.open()
+            loaded_map.close()
+        except MapMetadataMalformedException:
+            print("ERROR: Map to be loaded is invalid!")
+            return
+        
+        # Copy map to store
+        map_location = self.store_folder.absolute() / f"{uuid4()}.dmap"
+        map_copy = Path(map_location)
+        map_copy.write_bytes(map_file.read_bytes())
+
+        return Map(map_copy)
 
     # Close the store
     def close(self):

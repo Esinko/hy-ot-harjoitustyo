@@ -107,6 +107,9 @@ class TextEditable(TypedDict):
     y: int
     rotation: int
 
+class InvalidPathException(Exception):
+    def __init__(self, path):
+        super().__init__(f"Given path '{path}' is invalid.")
 
 class MapText:
     id: int

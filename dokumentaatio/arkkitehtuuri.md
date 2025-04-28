@@ -4,7 +4,6 @@
 
 ![Pakkauskaavio](alustava-pakkauskaavio.png)
 
-
 ## Sekvenssikaavio: kartan luonti, elementin lisäys ja kartan sulku
 ```mermaid
 sequenceDiagram

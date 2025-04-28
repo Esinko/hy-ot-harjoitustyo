@@ -11,17 +11,13 @@ Sovelluksessa ei ole erilaisia käyttäjätyyppejä.
     - `tehty` Käyttäjä voi luoda uuden kartan ja asettaa sille nimen
     - `tehty` Käyttäjä voi poistaa kartan
     - `tehty` Käyttäjä voi nimetä uudelleen kartan
-    - Käyttäjä voi viedä kartan valitsemaansa sijaintiin
-    - Käyttäjä voi tuoda kartan valitsemastaan sijainnista
+    - `tehty` Käyttäjä voi viedä kartan valitsemaansa sijaintiin
+    - `tehty` Käyttäjä voi tuoda kartan valitsemastaan sijainnista
 - Muokkaaminen ja luonti (editori)
     - Käyttäjä voi muokata kartan elementtien väriä ja taustakuvaa
         - `tehty` Neliöiden taustakuva
         - `tehty` Tekstin väri
-    - Käyttäjä voi lisätä kartalle erilaisia muotoja ja viivoja (neliö, pallo, kolmio ja viiva)
-        - `tehty` Neliöt
-        - Pallo
-        - Kolmio
-        - Viiva
+    - `tehty` Käyttäjä voi lisätä kartalle elementtejä (neliö)
     - `tehty` Käyttäjä voi lisätä karttalle tekstiä
     - Käyttäjä voi määrittää muotojen ja merkintöjen sijainnin ja koon
         - `tehty` Neliöiden sijainti
@@ -49,4 +45,5 @@ Kartan muokkausnäkymän idea:
 - Käyttäjä voi valita kartassa olevan tekstin fontin
 - Käyttäjä voi tuoda vektoripiirroksia karttoihin
 - Ohjelmisto pakkaa kartat tallentaessaan
-- Tallenna kartat Google-Drive App-kansioon 
+- Tallenna kartat Google-Drive App-kansioon
+- Kartalle voi lisätä pelinappuloita

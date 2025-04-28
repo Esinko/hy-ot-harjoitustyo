@@ -8,5 +8,7 @@
 | 7.4.2025 | 7 | arkkitehtuuridokumentin luonti ja koodin siistintää + editorinäkymään elementtien hallinta |
 | 8.4.2025 | 0 | lisätty arkkitehtuuri-linkki readme:hen |
 | 15.4.2025 | 10 | lisätty teksti-objektit karttaan, karttojen uudelleennimeäminen, release 1 ja sekvenssikaavio |
+| 15.4.2025 | 6 | lisätty import & export ominaisuudet ja refaktroitoitu UI-koodia |
 
-**SUMMA:** `27` h
+
+**SUMMA:** `33` h

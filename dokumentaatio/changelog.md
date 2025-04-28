@@ -33,3 +33,9 @@
 - Korjattu bugi, joka johti elementin taustan katoamiseen siirrettäessä
 - Lisätty ominaisuus muokata kartan nimiä valintanäkymästä
 - Siistitty valintanäkymän ulkonäköä
+
+# Viikko 6 (28.4.2025)
+- Refakotoritu application.py useammaksi View-luokan pohjalta tehdyiksi view-tiedostoiksi views-kansioon
+- Lisätty import & export ominaisuus kartoille
+- Lisätty tyylit kaikille näkymille
+

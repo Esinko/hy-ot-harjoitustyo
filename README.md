@@ -17,7 +17,7 @@ Elementin asetuksien muokkauspaneli aukeaa editorin oikealle puolelle. Voit sulk
 - [Työaikakirjanpito](./dokumentaatio/tyoaikakirjanpito.md)
 - [Changelog](./dokumentaation/changelog.md)
 - [Arkkitehtuuri](./dokumentaatio/arkkitehtuuri.md)
-- [Release 1](https://github.com/Esinko/hy-ot-harjoitustyo/releases/tag/viikko5)
+- [Release 2](https://github.com/Esinko/hy-ot-harjoitustyo/releases/tag/viikko6)
 
 ## Projektista
 Sovelluksen tarvitsema Python versio ja tiedot riippuvuuksista löytyvät `pyproject.toml`-tiedostosta.

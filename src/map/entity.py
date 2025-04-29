@@ -43,6 +43,7 @@ class Map:  # MARK: Map
         self.name = None
         self.elements = []
         self._connection = connection
+        self._on_change = None
 
     def close(self):
         """Close the map when done with it.

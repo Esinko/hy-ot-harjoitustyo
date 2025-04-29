@@ -39,3 +39,8 @@
 - Lisätty import & export ominaisuus kartoille
 - Lisätty tyylit kaikille näkymille
 
+## Viikko 6 (29.4.2025)
+- Dokumentoinnin parantamista (esim. docstring)
+- Korjattu virhe kartan valintanäkymässä
+- Refaktoroitu `map/abstract.py` erillisiksi kansioksi `map` ja `map_store` koodin kasvamisen ja rakenteellisen selkeyden vuoksi.
+- Lisätty käyttöhje

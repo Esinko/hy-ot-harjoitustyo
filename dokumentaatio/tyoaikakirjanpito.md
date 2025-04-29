@@ -9,6 +9,7 @@
 | 8.4.2025 | 0 | lisätty arkkitehtuuri-linkki readme:hen |
 | 15.4.2025 | 10 | lisätty teksti-objektit karttaan, karttojen uudelleennimeäminen, release 1 ja sekvenssikaavio |
 | 15.4.2025 | 6 | lisätty import & export ominaisuudet ja refaktroitoitu UI-koodia |
+| 15.4.2025 | 5 | refaktoiroitu projektin rakennetta ja paranneltu dokumentaatiota |
 
 
-**SUMMA:** `33` h
+**SUMMA:** `38` h

@@ -5,13 +5,14 @@
 
 Sovelluksella voi luoda karttoja ja tuoda kartoille monimuotoisia grid-järjestelmään sovitettuja elementtejä. Sovellus tallentaa muutokset automaattisesti ja muokattavaa karttaa on helppo vaihtaa.
 
-**Editorin käyttö**
+**Editorin käyttön pikaohjeet**
 
 Kartalle lisätään uusia elementtejä raahaamalla niitä kartalle työkalupalkista. Elementin voi valita muokkaamisen kohteeksi hiiren oikealla näppäimellä.
 
 Elementin asetuksien muokkauspaneli aukeaa editorin oikealle puolelle. Voit sulkea sen `ESC`-näppäimellä.
 
 ## Dokumentaatio ja linkit
+- [Käyttöohje](./dokumentaatio/kayttoohje.md)
 - [Vaatimusmäärittely](./dokumentaatio/vaatimusmaarittely.md)
 - [Työaikakirjanpito](./dokumentaatio/tyoaikakirjanpito.md)
 - [Changelog](./dokumentaation/changelog.md)
@@ -20,6 +21,8 @@ Elementin asetuksien muokkauspaneli aukeaa editorin oikealle puolelle. Voit sulk
 
 ## Projektista
 Sovelluksen tarvitsema Python versio ja tiedot riippuvuuksista löytyvät `pyproject.toml`-tiedostosta.
+
+Suositeltu python versio on `>=3.8`.
 
 ### Asennus ja käynnistys
 1. Asenna riippuvuudet: `poetry install`

@@ -44,3 +44,5 @@
 - Korjattu virhe kartan valintanäkymässä
 - Refaktoroitu `map/abstract.py` erillisiksi kansioksi `map` ja `map_store` koodin kasvamisen ja rakenteellisen selkeyden vuoksi.
 - Lisätty käyttöhje
+- Laajennettu testejä ja korjattu virhe karttojen luonnissa
+- Siistitty repositorioita

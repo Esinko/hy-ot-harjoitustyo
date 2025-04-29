@@ -1,6 +1,6 @@
 from operator import concat
 from PySide6 import QtWidgets, QtCore
-from map.abstract import Map
+from map.entity import Map
 from ui.components.buttons import AddElementButtonWidget, AddTextButtonWidget, StandardButtonWidget
 from ui.components.editor import EditorGraphicsView
 from ui.components.editor_properties.element import ElementPropertiesWidget

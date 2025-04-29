@@ -1,6 +1,6 @@
 from uuid import uuid4
 from PySide6 import QtWidgets, QtCore
-from map.abstract import MapStore
+from map_store.store import MapStore
 from ui.components.buttons import StandardButtonWidget
 from ui.components.inputs import TextInputWidget
 from ui.view import View

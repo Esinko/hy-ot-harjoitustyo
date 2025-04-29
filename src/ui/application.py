@@ -1,7 +1,8 @@
 from PySide6 import QtCore, QtWidgets
 from sys import exit
 from typing import List, TypedDict,  Any
-from map.abstract import MapStore, Map
+from map.entity import Map
+from map_store.store import MapStore
 from ui.view import Changer, View, ViewContext, Views
 from ui.views.create import CreateView
 from ui.views.delete import DeleteView

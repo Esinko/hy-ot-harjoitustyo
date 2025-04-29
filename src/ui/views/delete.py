@@ -1,5 +1,5 @@
 from PySide6 import QtWidgets, QtCore
-from map.abstract import Map
+from map.entity import Map
 from ui.components.buttons import StandardButtonWidget
 from ui.view import View
 

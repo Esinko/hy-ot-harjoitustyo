@@ -4,6 +4,7 @@ __pycache__
 htmlcov
 .venv
 data
+data*/
 nuitka-crash-report.xml
 pysidedeploy.spec
 deployment

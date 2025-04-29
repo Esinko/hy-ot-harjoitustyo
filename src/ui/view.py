@@ -1,7 +1,8 @@
 from dataclasses import dataclass, field
 from typing import Any, Callable, List, Literal, Optional
 from PySide6 import QtWidgets
-from map.abstract import Map, MapStore
+from map.entity import Map
+from map_store.store import MapStore
 
 @dataclass
 class ViewContext:

@@ -145,8 +145,11 @@ class ExportMapButton(IconButtonWidget):
 class StandardButtonWidget(QtWidgets.QPushButton):
     """Basic styled button with an optional icon.
     """
+    text: str = ""
+
     def __init__(self, text: str, icon: QtGui.QIcon = None, parent=None):
         super().__init__(parent=parent)
+        self.text = text
         self.setStyleSheet("""
             QPushButton {
                 color: white;

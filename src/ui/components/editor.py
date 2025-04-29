@@ -1,10 +1,9 @@
 from dataclasses import dataclass
 from PySide6 import QtWidgets, QtGui, QtCore
-from map.abstract import Element
+from map.types import Element
 from typing import List, Literal, Union
 from map.types import MapText
 from ui.components.editor_object import EditorObject
-from ui.components.editor_properties import element
 from ui.components.typography import GraphicsLabel
 
 @dataclass

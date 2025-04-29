@@ -1,5 +1,5 @@
 from ui.application import Application
-from map.abstract import MapStore
+from map_store.store import MapStore
 
 
 def main():

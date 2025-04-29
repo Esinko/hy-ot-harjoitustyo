@@ -2,7 +2,7 @@ from PySide6 import QtWidgets, QtCore
 from ui.components.editor_sidebar import EditorSidebar
 from ui.components.inputs import InputGroupWidget, TextInputWidget, ImageFileInputWidget, DialInputWidget
 from ui.components.buttons import DeleteButtonWidget, StandardButtonWidget
-from map.abstract import Element, ElementEditable
+from map.types import Element, ElementEditable
 
 
 class EditElementEvent:

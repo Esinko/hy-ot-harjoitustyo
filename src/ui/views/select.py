@@ -76,8 +76,7 @@ class SelectView(View):
                 # Open button
                 option_button = StandardButtonWidget(option["text"],
                                                      icon=QtGui.QIcon(abspath("./ui/icons/map.svg")))
-                option_button.setCursor(QtGui.QCursor(
-                    QtCore.Qt.CursorShape.PointingHandCursor))
+                option_button.setMaximumWidth(180)
                 option_button.clicked.connect(
                     lambda _, opt_id=option["id"]: self.change_view("edit_map", opt_id))
 

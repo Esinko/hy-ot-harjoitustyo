@@ -31,10 +31,10 @@ Sovelluksessa ei ole erilaisia käyttäjätyyppejä.
     
 ## Käyttöliittymäluonnoksia
 Kun sovellus avataan, käyttäjä voi valita aikaisemman, tuoda, viedä tai luoda uuden kartan:
-![alkunäkymä](valinta-luonnos.png)
+![alkunäkymä](./vaatimusmaarittely-kuvat/valinta-luonnos.png)
 
 Kartan muokkausnäkymän idea:
-![editori-idea](editori-luonnos.png)
+![editori-idea](./vaatimusmaarittely-kuvat/editori-luonnos.png)
 
 ## Jatkokehitysiedoita
 - Katselunäkymä

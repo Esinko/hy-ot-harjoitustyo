@@ -1,7 +1,7 @@
 # Arkkitehtuurikuvaus
 
 ## Rakenne
-![rakenne](rakenne.png)
+![rakenne](./arkkitehtuuri-kuvat/rakenne.png)
 
 Ohjelmassa on kolme keskeistä osaa: `ui`, `map_store` ja `map` -hakemistot.
 
@@ -129,7 +129,7 @@ Lähtökohtaisesti kaikki muu toiminnallisuus seuraa vastaavaa mallia. Käyttäj
 
 ## Looginen pakkauskaavio
 Tämä pakkauskaavio kuvastaa sovelluksen luokkien hierarkiaa ja suhdetta toisiinsa.
-![Pakkauskaavio](alustava-pakkauskaavio.png)
+![Pakkauskaavio](./arkkitehtuuri-kuvat/alustava-pakkauskaavio.png)
 
 ## Sekvenssikaavio: kartan luonti, elementin lisäys ja kartan sulku
 Tämä sekvenssikaavio kuvastaa sovelluksen ohjelmallista toimintaa.

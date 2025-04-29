@@ -8,6 +8,7 @@ from ui.view import View, Views
 class RenameView(View):
     """A view that allows the user to rename a specific map.
     """
+
     def _rename_map(self, map: Map, new_name: str, goto: Views):
         """Private method called when a specific map is to be renamed.
 
@@ -45,12 +46,14 @@ class RenameView(View):
         # Create button
         create_button = StandardButtonWidget("Rename")
         create_button.clicked.connect(
-            lambda: self._rename_map(self.context.map, name_input.text(), self.context.parameters[0])
+            lambda: self._rename_map(
+                self.context.map, name_input.text(), self.context.parameters[0])
         )
 
         # Cancel button
         cancel_button = StandardButtonWidget("Cancel")
-        cancel_button.clicked.connect(lambda: self.change_view(self.context.parameters[0]))
+        cancel_button.clicked.connect(
+            lambda: self.change_view(self.context.parameters[0]))
 
         button_row.addWidget(cancel_button)
         button_row.addWidget(create_button)

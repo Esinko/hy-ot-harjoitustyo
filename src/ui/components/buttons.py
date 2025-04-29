@@ -3,6 +3,7 @@ from PySide6 import QtWidgets, QtGui, QtCore
 from PySide6.QtSvgWidgets import QSvgWidget  # This is required because QT
 from os.path import abspath
 
+
 class AddObjectButtonWidget(QtWidgets.QPushButton):
     """Special styled button for adding an object to the editor.
     """
@@ -47,6 +48,7 @@ class AddObjectButtonWidget(QtWidgets.QPushButton):
 class AddElementButtonWidget(AddObjectButtonWidget):
     """Add an element to the editor button with drag support.
     """
+
     def __init__(self, parent=None):
         super().__init__(QtGui.QIcon(abspath("./ui/icons/add-tile.svg")),
                          "BDM; new_element", parent)
@@ -55,6 +57,7 @@ class AddElementButtonWidget(AddObjectButtonWidget):
 class AddTextButtonWidget(AddObjectButtonWidget):
     """Add an element to the editor button with drag support.
     """
+
     def __init__(self, parent=None):
         super().__init__(QtGui.QIcon(abspath("./ui/icons/add-text.svg")), "BDM; new_text", parent)
 
@@ -62,6 +65,7 @@ class AddTextButtonWidget(AddObjectButtonWidget):
 class IconButtonWidget(QtWidgets.QPushButton):
     """Generic style button with only an icon.
     """
+
     def __init__(self, parent=None):
         super().__init__(parent=parent)
         self.setStyleSheet("""
@@ -84,6 +88,7 @@ class IconButtonWidget(QtWidgets.QPushButton):
 class DeleteButtonWidget(IconButtonWidget):
     """Icon button with a trash icon.
     """
+
     def __init__(self, box_size: int = 32, parent=None):
         super().__init__(parent=parent)
         icon = QtGui.QIcon(abspath("./ui/icons/trash.svg"))
@@ -97,6 +102,7 @@ class DeleteButtonWidget(IconButtonWidget):
 class RenameButtonWidget(IconButtonWidget):
     """Icon button with a pencil icon.
     """
+
     def __init__(self, box_size: int = 32, parent=None):
         super().__init__(parent=parent)
         icon = QtGui.QIcon(abspath("./ui/icons/edit.svg"))
@@ -106,12 +112,14 @@ class RenameButtonWidget(IconButtonWidget):
         self.setIconSize(QtCore.QSize(box_size - 8, box_size - 8))
         self.setFixedSize(box_size, box_size)
 
+
 class SelectPathEvent:
     path: Path
 
     def __init__(self, selected_path):
         # TODO: Handle read issue here?
         self.path = Path(selected_path)
+
 
 class ExportMapButton(IconButtonWidget):
     """Icon button with a share icon which opens a dialog to pick a location for a map.
@@ -125,13 +133,13 @@ class ExportMapButton(IconButtonWidget):
             None,
             "Select Location",
             abspath("./untitled.dmap")
-                if not self.placeholder_name else
-                abspath(f"./{self.placeholder_name}"),
+            if not self.placeholder_name else
+            abspath(f"./{self.placeholder_name}"),
             "Maps (*.dmap)"
         )
         self.selectPathEvent.emit(SelectPathEvent(selected_path))
 
-    def __init__(self, box_size: int = 32, parent=None, placeholder_name = ""):
+    def __init__(self, box_size: int = 32, parent=None, placeholder_name=""):
         super().__init__(parent=parent)
         icon = QtGui.QIcon(abspath("./ui/icons/share.svg"))
         self.setIcon(icon)
@@ -141,6 +149,7 @@ class ExportMapButton(IconButtonWidget):
         self.setIconSize(QtCore.QSize(box_size - 8, box_size - 8))
         self.setFixedSize(box_size, box_size)
         self.clicked.connect(self._select_file)
+
 
 class StandardButtonWidget(QtWidgets.QPushButton):
     """Basic styled button with an optional icon.
@@ -175,6 +184,8 @@ class StandardButtonWidget(QtWidgets.QPushButton):
 
 # Copy, to avoid a circular import
 # TODO: Create a dedicated "events" file?
+
+
 class SelectFileEvent:
     file: Path
     name: str
@@ -185,6 +196,7 @@ class SelectFileEvent:
         self.file = Path(file_path)
         self.data = self.file.read_bytes()
         self.name = self.file.name
+
 
 class ImportMapButton(StandardButtonWidget):
     """An icon button which allows the user to pick a map file to import. 

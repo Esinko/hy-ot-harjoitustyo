@@ -7,6 +7,7 @@ from ui.view import View
 class DeleteView(View):
     """View that allows the user to choose to delete a specific map.
     """
+
     def _delete_map(self, map: Map):
         """Private method called to delete a specific map.
 
@@ -33,7 +34,8 @@ class DeleteView(View):
 
         # Delete button
         delete_button = StandardButtonWidget("Delete")
-        delete_button.clicked.connect(lambda: self._delete_map(self.context.map))
+        delete_button.clicked.connect(
+            lambda: self._delete_map(self.context.map))
 
         # Cancel button
         cancel_button = StandardButtonWidget("Cancel")

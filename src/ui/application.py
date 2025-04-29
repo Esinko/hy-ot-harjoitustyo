@@ -10,13 +10,15 @@ from ui.views.editor import EditorView
 from ui.views.rename import RenameView
 from ui.views.select import SelectView
 
+
 class SelectOption(TypedDict):
     id: str
     text: str
 
 # TODO: Refactor BaseWindow and application as a combined ApplicationWindow class
 
-class BaseWindow(QtWidgets.QWidget): # MARK: Base window
+
+class BaseWindow(QtWidgets.QWidget):  # MARK: Base window
     """The main widget inside the QT window.
 
     Attributes:
@@ -85,7 +87,7 @@ class BaseWindow(QtWidgets.QWidget): # MARK: Base window
             # This will dereference the layout
             if present:
                 QtWidgets.QWidget().setLayout(old_layout)
-        
+
         # Run view teardown
         if self.current_view:
             self.current_view.close()
@@ -113,7 +115,7 @@ class BaseWindow(QtWidgets.QWidget): # MARK: Base window
         self.clear_window()
         # TODO: Can we design this view in a way to not need to use map_store directly?
         create_view = CreateView(ViewContext(map_store=map_store),
-                                    self.change_view)
+                                 self.change_view)
         create_view.open()
         self.setLayout(create_view.layout)
         self.current_view = create_view
@@ -156,13 +158,14 @@ class BaseWindow(QtWidgets.QWidget): # MARK: Base window
         """
         self.clear_window()
         # TODO: Can we design this view in a way to not use map_store directly and opt for map instead?
-        select_view = SelectView(ViewContext(parameters=[options], map_store=map_store), 
+        select_view = SelectView(ViewContext(parameters=[options], map_store=map_store),
                                  self.change_view)
         select_view.open()
         self.setLayout(select_view.layout)
         self.current_view = select_view
 
-class Application: # MARK: Application
+
+class Application:  # MARK: Application
     """The main application class
 
     Attributes:

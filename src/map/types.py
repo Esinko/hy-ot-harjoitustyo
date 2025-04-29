@@ -1,5 +1,6 @@
 from typing import List, TypedDict
 
+
 class AssetEditable(TypedDict):
     """Asset in dict form.
     """
@@ -48,6 +49,7 @@ class Asset:  # MARK: Asset
 class AssetNotFoundException(Exception):
     """Exception to be raised when an asset is not found.
     """
+
     def __init__(self, asset_id):
         """The constructor of the AssetNotFound exception.
 
@@ -134,6 +136,7 @@ class Element:  # MARK: Element
 class ElementNotFoundException(Exception):
     """Exception to be raised when an element was not found.
     """
+
     def __init__(self, element_id):
         """The constructor of the ElementNotFound exception.
 
@@ -146,18 +149,21 @@ class ElementNotFoundException(Exception):
 class MapMetadataMalformedException(Exception):
     """Exception to be raised when the map metadata is malformed.
     """
+
     def __init__(self, map_file):
         """The constructor of the MapMetadataMalformed exception.
 
         Args:
             map_file (str): The location of the map that is malformed.
         """
-        super().__init__(f"Metadata of '{map_file}' is malformed. Cannot read map.")
+        super().__init__(
+            f"Metadata of '{map_file}' is malformed. Cannot read map.")
 
 
 class TextNotFoundException(Exception):
     """Exception to be raised when a text object is not found.
     """
+
     def __init__(self, text_id):
         """The constructor of the ElementNotFound exception.
 
@@ -179,9 +185,11 @@ class TextEditable(TypedDict):
     y: int
     rotation: int
 
+
 class InvalidPathException(Exception):
     """Exception to be raised when a given path was invalid.
     """
+
     def __init__(self, path):
         """The constructor of the InvalidPath exception.
 
@@ -190,7 +198,8 @@ class InvalidPathException(Exception):
         """
         super().__init__(f"Given path '{path}' is invalid.")
 
-class MapText: # MARK: Text
+
+class MapText:  # MARK: Text
     """Class representation of a text object on the map.
 
     Attributes:
@@ -214,7 +223,7 @@ class MapText: # MARK: Text
     y: int
     rotation: int
 
-    def __init__(self, text_id, name, value, color, font_size, x, y, rotation):
+    def __init__(self, *raw):
         """The constructor of the text object class.
 
         Args:
@@ -227,14 +236,14 @@ class MapText: # MARK: Text
             y (int): The Y coordinate of the text (true)
             rotation (int): The rotation of the text object.
         """
-        self.id = text_id
-        self.name = name
-        self.value = value
-        self.color = color
-        self.font_size = font_size
-        self.x = x
-        self.y = y
-        self.rotation = rotation
+        self.id = raw[0]
+        self.name = raw[1]
+        self.value = raw[2]
+        self.color = raw[3]
+        self.font_size = raw[4]
+        self.x = raw[5]
+        self.y = raw[6]
+        self.rotation = raw[7]
 
     def to_dict(self) -> TextEditable:
         """Get the text object in dict form.

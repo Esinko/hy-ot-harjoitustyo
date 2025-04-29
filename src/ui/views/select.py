@@ -18,7 +18,7 @@ class SelectView(View):
             event (SelectPathEvent): The selected path provided by the OS's path select popup.
         """
         self.context.map_store.export(
-            self.context.map_store.get(option["id"]), 
+            self.context.map_store.get(option["id"]),
             event.path
         )
 
@@ -29,7 +29,7 @@ class SelectView(View):
             event (SelectFileEvent): The selected file provided by the OS's path select popup.
         """
         self.context.map_store.add(event.file.absolute())
-        self.change_view("select_map") # Refreshes the view
+        self.change_view("select_map")  # Refreshes the view
 
     def open(self):
         # Change to horizontal layout
@@ -84,10 +84,12 @@ class SelectView(View):
                 rename_button = RenameButtonWidget(24)
                 rename_button.clicked.connect(
                     lambda: self.change_view("rename_map", (option["id"], "select_map")))
-                
+
                 # Share button
-                share_button = ExportMapButton(24, placeholder_name=option["text"])
-                share_button.selectPathEvent.connect(lambda event: self._export_map(option, event))
+                share_button = ExportMapButton(
+                    24, placeholder_name=option["text"])
+                share_button.selectPathEvent.connect(
+                    lambda event: self._export_map(option, event))
 
                 # Delete button
                 delete_button = DeleteButtonWidget(24)
@@ -112,7 +114,8 @@ class SelectView(View):
 
         # Import button
         import_button = ImportMapButton()
-        import_button.selectFileEvent.connect(lambda event: self._import_map(event))
+        import_button.selectFileEvent.connect(
+            lambda event: self._import_map(event))
         button_row.addWidget(import_button)
 
         # Create button

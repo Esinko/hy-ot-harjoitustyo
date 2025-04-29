@@ -31,7 +31,7 @@ class Map:  # MARK: Map
     elements: List[Element]
     _connection: Connection | None
     _on_change: MethodType | None
-    
+
     def __init__(self, map_file: Path, connection: Connection | None = None):
         """Constructor of the map class.
 

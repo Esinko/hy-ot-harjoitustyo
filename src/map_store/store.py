@@ -10,6 +10,7 @@ from map.types import (
     MapMetadataMalformedException,
 )
 
+
 class MapStore:  # MARK: MapStore
     """Used to manage maps in a central store.
 
@@ -42,7 +43,8 @@ class MapStore:  # MARK: MapStore
         # Init and schema for maps
         self.schema_file = Path(
             schema_path if schema_path else "./map_store/schema.sql")
-        self.init_file = Path(init_path if init_path else "./map_store/init.sql")
+        self.init_file = Path(
+            init_path if init_path else "./map_store/init.sql")
 
         if not self.init_file.exists() or not self.schema_file.exists():
             raise FileNotFoundError("Map init or schema missing!")
@@ -113,10 +115,10 @@ class MapStore:  # MARK: MapStore
             self._maps.append(opened_map)
             return opened_map
 
-        return None # Fallback
-    
+        return None  # Fallback
+
     # Export a map to a specific location
-    def export(self, map: Map, location: str):
+    def export(self, map_to_export: Map, location: str):
         """Export a map from the store to some location (copy action)
 
         Args:
@@ -128,11 +130,11 @@ class MapStore:  # MARK: MapStore
         """
         try:
             target_location = Path(location)
-        except TypeError:
-            raise InvalidPathException(location)
-        
+        except TypeError as type_err:
+            raise InvalidPathException(location) from type_err
+
         # Copy map to target
-        target_location.write_bytes(map.map_file.read_bytes())
+        target_location.write_bytes(map_to_export.map_file.read_bytes())
 
     # Add a map to the map store from a specified location
     def add(self, location: str) -> Map | None:
@@ -149,9 +151,9 @@ class MapStore:  # MARK: MapStore
         """
         try:
             map_file = Path(location)
-        except TypeError:
-            raise InvalidPathException(location)
-        
+        except TypeError as type_err:
+            raise InvalidPathException(location) from type_err
+
         # Try to load the map
         try:
             loaded_map = Map(map_file)
@@ -160,7 +162,7 @@ class MapStore:  # MARK: MapStore
         except MapMetadataMalformedException:
             print("ERROR: Map to be loaded is invalid!")
             return None
-        
+
         # Copy map to store
         map_location = self.store_folder.absolute() / f"{uuid4()}.dmap"
         map_copy = Path(map_location)

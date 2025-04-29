@@ -6,6 +6,7 @@ from map.types import MapText
 from ui.components.editor_object import EditorObject
 from ui.components.typography import GraphicsLabel
 
+
 @dataclass
 class AddElementEvent:
     x: int
@@ -13,8 +14,9 @@ class AddElementEvent:
     width: int
     height: int
 
+
 @dataclass
-class MoveElementEvent: # TODO: Combine text and element add+move events?
+class MoveElementEvent:  # TODO: Combine text and element add+move events?
     id: int
     x: int
     y: int
@@ -36,6 +38,7 @@ class MoveTextEvent:
 class RenderingException(Exception):
     """Exception raised when rendering of the editor graphics fails.
     """
+
     def __init__(self, object):
         """Constructor of the rendering exception.
 
@@ -48,6 +51,7 @@ class RenderingException(Exception):
 class TileWidget(EditorObject):  # MARK: Tile
     """A single tile element on the map.
     """
+
     def __init__(self, *args, tile_id: int, background_image: bytes | None = None, rotation: int = 0):
         """Constructor of the tile element to create a new tile to be rendered.
 
@@ -95,7 +99,7 @@ class TileWidget(EditorObject):  # MARK: Tile
             painter.drawRect(self.rect())
 
 
-class TextWidget(EditorObject): # MARK: Text
+class TextWidget(EditorObject):  # MARK: Text
     """A single text object rendered on the map.
 
     Attributes:
@@ -155,7 +159,8 @@ class TextWidget(EditorObject): # MARK: Text
 ObjectsList = List[Union[Element, MapText]]
 
 
-class FocusEvent: # NOTE: We need this here to avoid a circular dependency for now. Move to own file later.
+# NOTE: We need this here to avoid a circular dependency for now. Move to own file later.
+class FocusEvent:
     id: int | None
     type = Literal["element", "text", None]
 
@@ -324,7 +329,7 @@ class EditorGraphicsView(QtWidgets.QGraphicsView):  # MARK: Editor
 
     def dragMoveEvent(self, event: QtGui.QDragMoveEvent): self._canDrag(event)
 
-    def dropEvent(self, event: QtGui.QDropEvent): # MARK: Drag Event
+    def dropEvent(self, event: QtGui.QDropEvent):  # MARK: Drag Event
         # Triggered when user has picked the location
         if event.mimeData().hasText():
             event_mime_text = event.mimeData().text()
@@ -378,7 +383,8 @@ class EditorGraphicsView(QtWidgets.QGraphicsView):  # MARK: Editor
             event.ignore()
             print("WARNING: Drag event did not contain data. Ignored.")
 
-    def _setFocusedObjectWidget(self, object: TileWidget | TextWidget | None): # MARK: Set focus
+    # MARK: Set focus
+    def _setFocusedObjectWidget(self, object: TileWidget | TextWidget | None):
         # Set focused object in the editor
         if object == None:
             self.focusedObject = None
@@ -394,7 +400,7 @@ class EditorGraphicsView(QtWidgets.QGraphicsView):  # MARK: Editor
             self.focusObjectEvent.emit(FocusEvent(object.id, object.type))
         self.viewport().update()
 
-    def _render_element_object(self, element: Element) -> bool: # MARK: Render
+    def _render_element_object(self, element: Element) -> bool:  # MARK: Render
         # Add grid elements to the map
         # Create tile
         tile = TileWidget(element.x * self.element_size,  # x

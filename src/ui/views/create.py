@@ -9,6 +9,7 @@ from ui.view import View
 class CreateView(View):
     """View that allows the user to create a new map with a specific name in a specific map store.
     """
+
     def _create_map(self, map_store: MapStore, name: str):
         """Private method called when a new map is to be created.
 

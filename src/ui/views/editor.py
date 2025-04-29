@@ -7,9 +7,11 @@ from ui.components.editor_properties.element import ElementPropertiesWidget
 from ui.components.editor_properties.text import TextPropertiesWidget
 from ui.view import View
 
+
 class EditorView(View):
     """The editor view, in which the user can edit and view a specific map.
     """
+
     def _create_element(self, map: Map, x: int, y: int):
         """Private method called when a new element is to be created in a specific location.
 

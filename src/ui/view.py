@@ -4,15 +4,18 @@ from PySide6 import QtWidgets
 from map.entity import Map
 from map_store.store import MapStore
 
+
 @dataclass
 class ViewContext:
     map: Optional[Map] = None
     map_store: Optional[MapStore] = None
     parameters: List[Any] = field(default_factory=list)
 
+
 Views = Literal["select_map", "create_map",
                 "delete_map", "edit_map", "rename_map"]
 Changer = Callable[[Views, Any], None]
+
 
 class View:
     """Simple representation of a view in the application window inside the BaseWindow widget.
@@ -36,7 +39,7 @@ class View:
         self.context = context
         self.view_changer = change_view
 
-    def change_view(self, view, params = ()):
+    def change_view(self, view, params=()):
         self.view_changer(view, params)
 
     # Open the view
@@ -44,10 +47,9 @@ class View:
         """Method called when the view is to be opened.
         """
         pass
-    
+
     # Close the view
     def close(self):
         """Method called when the view is to be closed.
         """
         pass
-    

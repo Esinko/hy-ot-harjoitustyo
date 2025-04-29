@@ -7,6 +7,7 @@ from pathlib import Path
 class TextInputWidget(QtWidgets.QLineEdit):
     """A styled text input.
     """
+
     def __init__(self, parent=None):
         super().__init__(parent=parent)
         self.setStyleSheet("""
@@ -28,6 +29,7 @@ class TextInputWidget(QtWidgets.QLineEdit):
 class TextAreaInputWidget(QtWidgets.QTextEdit):
     """A styled text area.
     """
+
     def __init__(self, parent=None):
         super().__init__(parent=parent)
         self.setLineWrapMode(QtWidgets.QTextEdit.NoWrap)
@@ -77,6 +79,7 @@ class ImageFileInputWidget(StandardButtonWidget):
     def __init__(self, parent=None):
         super().__init__(text="Select Image", parent=parent)
         self.clicked.connect(self._select_file)
+
 
 class DialInputWidget(QtWidgets.QWidget):
     """A styled dial with full 360-range.
@@ -151,6 +154,7 @@ class DialInputWidget(QtWidgets.QWidget):
 class InputGroupWidget(QtWidgets.QFrame):
     """A horizontal input group.
     """
+
     def __init__(self):
         super().__init__()
         button_layout = QtWidgets.QHBoxLayout()
@@ -280,7 +284,7 @@ class DragNumberInputWidget(QtWidgets.QLineEdit):
 
 class ColorInputWidget(InputGroupWidget):
     """Color input widget with native color picker and preview.
-    
+
     Attributes:
         color_changed (Signal): Signal emitted when the color changes
         color (QColor): The current color of the input

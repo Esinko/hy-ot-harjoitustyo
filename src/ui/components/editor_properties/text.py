@@ -52,7 +52,7 @@ class TextPropertiesWidget(EditorSidebar):
         self.font_size_input.setText(
             str(text.font_size) if text is not None else "")
         self.font_size_input.setDisabled(text is None)
-        self.color_input.setColor(text.color if text is not None else "#000")
+        self.color_input.set_color(text.color if text is not None else "#000")
         self.color_input.setDisabled(text is None)
 
         # Set target last to prevent emission of changed events
@@ -95,7 +95,7 @@ class TextPropertiesWidget(EditorSidebar):
     def _edit_color(self):
         if not self.target_text:
             return
-        self.target_text.color = self.color_input.getColor()
+        self.target_text.color = self.color_input.get_color()
         text_editable = self.target_text.to_dict()
         self.editTextEvent.emit(EditTextEvent(
             self.target_text.id, text_editable))
@@ -151,7 +151,7 @@ class TextPropertiesWidget(EditorSidebar):
         # Text color
         color_label = QtWidgets.QLabel("Text Color:")
         self.color_input = ColorInputWidget()
-        self.color_input.colorChanged.connect(self._edit_color)
+        self.color_input.color_changed.connect(self._edit_color)
         self.sidebar_layout.addWidget(color_label)
         self.sidebar_layout.addSpacerItem(QtWidgets.QSpacerItem(0, 4))
         self.sidebar_layout.addWidget(self.color_input)

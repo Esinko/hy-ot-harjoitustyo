@@ -5,6 +5,8 @@ from pathlib import Path
 
 
 class TextInputWidget(QtWidgets.QLineEdit):
+    """A styled text input.
+    """
     def __init__(self, parent=None):
         super().__init__(parent=parent)
         self.setStyleSheet("""
@@ -24,6 +26,8 @@ class TextInputWidget(QtWidgets.QLineEdit):
 
 
 class TextAreaInputWidget(QtWidgets.QTextEdit):
+    """A styled text area.
+    """
     def __init__(self, parent=None):
         super().__init__(parent=parent)
         self.setLineWrapMode(QtWidgets.QTextEdit.NoWrap)
@@ -56,7 +60,8 @@ class SelectFileEvent:
 
 
 class ImageFileInputWidget(StandardButtonWidget):
-    # TODO: Convert to group, add filename in read-only text line, then add X and select buttons on the right
+    """A styled image file input.
+    """
     selectFileEvent = QtCore.Signal(SelectFileEvent)
 
     def _select_file(self):
@@ -74,9 +79,16 @@ class ImageFileInputWidget(StandardButtonWidget):
         self.clicked.connect(self._select_file)
 
 class DialInputWidget(QtWidgets.QWidget):
+    """A styled dial with full 360-range.
+    """
     valueChanged = QtCore.Signal(int)
 
     def __init__(self, step=10, *args, **kwargs):
+        """The constructor of the styled dial input.
+
+        Args:
+            step (int): The granularity of the dial step. Defaults to 10.
+        """
         super().__init__(*args, **kwargs)
         self.dial = QtWidgets.QDial()
         self.label = QtWidgets.QLabel("0 deg")
@@ -98,9 +110,11 @@ class DialInputWidget(QtWidgets.QWidget):
         layout.addWidget(self.dial)
         layout.addWidget(self.label)
         self.setLayout(layout)
-        self.dial.valueChanged.connect(self.updateValue)
+        self.dial.valueChanged.connect(self._updateValue)
 
-    def updateValue(self):
+    def _updateValue(self):
+        """Handle the updating of the dial value.
+        """
         # Handle updating the dial value in a stepped fashion
         stepped_value = round(self.dial.value(), -1)
         self.dial.blockSignals(True)  # Block signals to prevent a loop
@@ -109,20 +123,34 @@ class DialInputWidget(QtWidgets.QWidget):
         self.label.setText(f"{stepped_value - 180} deg")
         self.valueChanged.emit(stepped_value)
 
-    # Standard for dial
-    def setValue(self, value):
+    def setValue(self, value: int):
+        """Set the value of the dial. Causes an update event!
+
+        Args:
+            value (int): The new value of the dial.
+        """
         self.dial.setValue(value)
 
-    # Standard for dial
     def value(self) -> int:
+        """Get the value of the dial.
+
+        Returns:
+            int: The value of the dial
+        """
         return self.dial.value()
 
-    # Standard for dial
     def setDisabled(self, disabled: bool):
+        """Enable/Disable user interaction on the dial.
+
+        Args:
+            disabled (bool): True to disable the dial.
+        """
         self.dial.setDisabled(disabled)
 
 
 class InputGroupWidget(QtWidgets.QFrame):
+    """A horizontal input group.
+    """
     def __init__(self):
         super().__init__()
         button_layout = QtWidgets.QHBoxLayout()
@@ -141,10 +169,22 @@ class InputGroupWidget(QtWidgets.QFrame):
 
     # Standard from layout
     def addWidget(self, widget):
+        """Add a new widget to the group.
+
+        Args:
+            widget: The widget to add to the group.
+        """
         self.layout().addWidget(widget)
 
 
 class DragNumberInputWidget(QtWidgets.QLineEdit):
+    """A number input that allows horizontal mouse dragging to change the value along with regular edit.
+
+    Attributes:
+        drag_step (int): The granularity of the drag step
+        min (int, optional): Minimum value of the input
+        max (int, optional): Maximum value of the input
+    """
     drag_step: int
     min: int | None
     max: int | None
@@ -153,6 +193,13 @@ class DragNumberInputWidget(QtWidgets.QLineEdit):
     _drag_start_x: int
 
     def __init__(self, parent=None, drag_step=1, min_value: int | None = None, max_value: int | None = None):
+        """Constructor of the drag-number-input
+
+        Args:
+            drag_step (int): The drag step. Defaults to 1.
+            min_value (int, optional): The minimum value of the input.
+            max_value (int, optional): The maximum value of the input.
+        """
         super().__init__(parent=parent)
         self.drag_step = drag_step
         self.min = min_value
@@ -192,7 +239,7 @@ class DragNumberInputWidget(QtWidgets.QLineEdit):
             }
         """)
 
-    # Override press event to begin dragging
+    # Override press event to begin dragging (QT override)
     def mousePressEvent(self, event):
         if event.button() == QtCore.Qt.MouseButton.LeftButton:
             self._dragging = True
@@ -204,7 +251,7 @@ class DragNumberInputWidget(QtWidgets.QLineEdit):
         else:
             super().mousePressEvent(event)
 
-    # Handle changing value while dragging
+    # Handle changing value while dragging (QT override)
     def mouseMoveEvent(self, event):
         if self._dragging:
             dx = event.globalX() - self._drag_start_x
@@ -219,7 +266,7 @@ class DragNumberInputWidget(QtWidgets.QLineEdit):
         else:
             super().mouseMoveEvent(event)
 
-    # Handle end during dragging
+    # Handle end during dragging (QT override)
     def mouseReleaseEvent(self, event):
         if event.button() == QtCore.Qt.MouseButton.LeftButton and self._dragging:
             self._dragging = False
@@ -232,42 +279,68 @@ class DragNumberInputWidget(QtWidgets.QLineEdit):
 
 
 class ColorInputWidget(InputGroupWidget):
-    colorChanged = QtCore.Signal(str)
+    """Color input widget with native color picker and preview.
+    
+    Attributes:
+        color_changed (Signal): Signal emitted when the color changes
+        color (QColor): The current color of the input
+        color_preview (QWidget): The preview widget
+    """
+    color_changed = QtCore.Signal(str)
     color: QtGui.QColor
-    colorPreview: QtWidgets.QWidget
+    color_preview: QtWidgets.QWidget
 
     def __init__(self, initial_color="#FF0000"):
+        """Constructor of the color input
+
+        Args:
+            initial_color (str, optional): The initial color in the input. Defaults to "#FF0000".
+        """
         super().__init__()
         self.setContentsMargins(0, 0, 0, 0)
         self.color = QtGui.QColor(initial_color)
 
         # Color preview
-        self.colorPreview = QtWidgets.QWidget()
-        self.colorPreview.setAutoFillBackground(True)
-        self.colorPreview.setFixedSize(22, 22)
-        self.addWidget(self.colorPreview)
+        self.color_preview = QtWidgets.QWidget()
+        self.color_preview.setAutoFillBackground(True)
+        self.color_preview.setFixedSize(22, 22)
+        self.addWidget(self.color_preview)
 
         # Open button
         open_button = StandardButtonWidget("Pick Color")
-        open_button.clicked.connect(self.choose_color)
+        open_button.clicked.connect(self._choose_color)
         self.addWidget(open_button)
-        self.update_style()
+        self._update_style()
 
-    def choose_color(self):
-        color = QtWidgets.QColorDialog.getColor(
+    def _choose_color(self):
+        """Private method that opens the native OS provided color picker.
+        """
+        color = QtWidgets.QColorDialog.get_color(
             self.color, self.parentWidget())
         if color.isValid():
             self.color = color
-            self.colorChanged.emit(color)
-            self.update_style()
+            self.color_changed.emit(color)
+            self._update_style()
 
-    def setColor(self, color: str):
+    def set_color(self, color: str):
+        """Set the color of the input.
+
+        Args:
+            color (str): The hex color to be set.
+        """
         self.color = QtGui.QColor(color)
-        self.update_style()
+        self._update_style()
 
-    def getColor(self) -> str:
+    def get_color(self) -> str:
+        """Get the current hex color value of the input.
+
+        Returns:
+            str: The hex color of the input.
+        """
         return self.color.name()
 
-    def update_style(self):
-        self.colorPreview.setStyleSheet(
+    def _update_style(self):
+        """Internal method that updates the preview's color to match the input.
+        """
+        self.color_preview.setStyleSheet(
             f"background-color: {self.color.name()}; border: 1px solid #393939;")

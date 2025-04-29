@@ -12,6 +12,14 @@ class FocusEvent:
 
 
 class EditorObject(QtCore.QObject, QtWidgets.QGraphicsRectItem):
+    """Class to inherit for widgets to render in the editor graphics view. Especially important for focus handling.
+
+    Attributes:
+        focusEvent (QSignal): Signal when an object wants to gain focus.
+        type (str): Object type (often element or text)
+        id (int): Unique id usually from the DB
+        edit_circle_radius (32): Hardcoded edit circle size
+    """
     focusEvent = QtCore.Signal(FocusEvent)
     type: str = "any"
     id: int

@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from PySide6 import QtWidgets, QtGui, QtCore
 from map.abstract import Element
 from typing import List, Literal, Union
@@ -6,60 +7,56 @@ from ui.components.editor_object import EditorObject
 from ui.components.editor_properties import element
 from ui.components.typography import GraphicsLabel
 
-
+@dataclass
 class AddElementEvent:
     x: int
     y: int
     width: int
     height: int
 
-    def __init__(self, x, y, width, height):
-        self.x = x
-        self.y = y
-        self.width = width
-        self.height = height
-
-
-class MoveElementEvent:
+@dataclass
+class MoveElementEvent: # TODO: Combine text and element add+move events?
     id: int
     x: int
     y: int
 
-    def __init__(self, id, x, y):
-        self.x = x
-        self.y = y
-        self.id = id
 
-
+@dataclass
 class AddTextEvent:
     x: int
     y: int
 
-    def __init__(self, x, y, width, height):
-        self.x = x
-        self.y = y
 
-
+@dataclass
 class MoveTextEvent:
     id: int
     x: int
     y: int
 
-    def __init__(self, id, x, y):
-        self.x = x
-        self.y = y
-        self.id = id
-
 
 class RenderingException(Exception):
+    """Exception raised when rendering of the editor graphics fails.
+    """
     def __init__(self, object):
+        """Constructor of the rendering exception.
+
+        Args:
+            object(dict): The dict form of the object that caused this error. 
+        """
         super().__init__(f"Failed to render object: {object.to_dict()}")
 
 
 class TileWidget(EditorObject):  # MARK: Tile
-    highlight: QtWidgets.QGraphicsRectItem | None = None
+    """A single tile element on the map.
+    """
+    def __init__(self, *args, tile_id: int, background_image: bytes | None = None, rotation: int = 0):
+        """Constructor of the tile element to create a new tile to be rendered.
 
-    def __init__(self, *args, tile_id: int, background_image: bytes | None, rotation: int):
+        Args:
+            tile_id (int): The id of the element to render.
+            background_image (bytes | None): The raw bytes of the element background. Defaults to None.
+            rotation (int): The rotation of the element's contents. Defaults to 0.
+        """
         super().__init__(*args, object_id=tile_id, type="element")
 
         # Render background or default color
@@ -84,11 +81,12 @@ class TileWidget(EditorObject):  # MARK: Tile
         else:
             self.setBrush(QtGui.QBrush(QtGui.QColor("#8F9092")))
 
-    # Paint the tile and add outline when focused
     def paint(self, painter, option, widget):
+        """Paint the tile and add outline when focused.
+        """
         super().paint(painter, option, widget)
 
-        if self.hasFocus() and not self.highlight:
+        if self.hasFocus():
             # Add outline when focused
             self.setZValue(100)
             pen = QtGui.QPen(QtGui.QColor("#F89B2E"), 2)
@@ -99,6 +97,12 @@ class TileWidget(EditorObject):  # MARK: Tile
 
 
 class TextWidget(EditorObject): # MARK: Text
+    """A single text object rendered on the map.
+
+    Attributes:
+        text_label (GraphicsLabel): The graphics item that handles text rendering
+        text (MapText): The text form information
+    """
     text_label: GraphicsLabel
     text: MapText
 
@@ -162,6 +166,23 @@ class FocusEvent: # NOTE: We need this here to avoid a circular dependency for n
 
 
 class EditorGraphicsView(QtWidgets.QGraphicsView):  # MARK: Editor
+    """The editor graphics element. Renders the editor contents. This class does not support snake case.
+    Contains a bunch of overrides.
+
+    Attributes:
+        addElementEvent (QSignal): Signal when an element is to be added.
+        moveElementEvent (QSignal): Signal when an element is to be moved.
+        addTextEvent (QSignal): Signal when text is to be added.
+        moveTextEvent (QSignal): Signal when text is to be moved.
+        focusObjectEvent (QSignal): Signal when a specific object gains focus.
+        objects (ObjectsList): List of objects to render
+        objectWidgets (List[Union[TileWidget, TextWidget]]): QT constructs used for rendering
+        focusedObjectWidget (TileWidget | TextWidget | None): The current widget in focus, if something is in focus
+        focusedObject (MapText | Element | None): The data of the object in focus, if something is in focus.
+
+    Raises:
+        RenderingException: For unexpected issues while rendering. Blocking.
+    """
     addElementEvent = QtCore.Signal(AddElementEvent)
     moveElementEvent = QtCore.Signal(MoveElementEvent)
     addTextEvent = QtCore.Signal(AddTextEvent)
@@ -173,6 +194,11 @@ class EditorGraphicsView(QtWidgets.QGraphicsView):  # MARK: Editor
     focusedObject: MapText | Element | None = None
 
     def __init__(self, is_preview: bool = False):
+        """Constructor of the editor. Styles the graphics view and scales it.
+
+        Args:
+            is_preview (bool, optional): If this graphics view should be preview only. Defaults to False.
+        """
         super().__init__()
 
         # Styling & QT configs
@@ -206,27 +232,34 @@ class EditorGraphicsView(QtWidgets.QGraphicsView):  # MARK: Editor
         self.coord_label.setAlignment(
             QtCore.Qt.AlignmentFlag.AlignLeft | QtCore.Qt.AlignmentFlag.AlignVCenter)
 
-    # Get the adjusted coordinates
     def _getAdjustedCoordinate(self, coordinate: int | float):
+        """Get the adjusted 1/256 coordinates.
+
+        Args:
+            coordinate (int | float): Coordinate to convert
+
+        Returns:
+            int: Adjusted coordinates
+        """
         return coordinate // self.element_size
 
-    # Handle manipulating the map position
     def mouseMoveEvent(self, event):
+        # Handle manipulating the map position
         scene_pos = self.mapToScene(event.pos())
         coord_text = f"x: {self._getAdjustedCoordinate(int(scene_pos.x()))}, y: {self._getAdjustedCoordinate(int(scene_pos.y()))}"
         self.coord_label.setText(coord_text)
         self.coord_label.setFixedWidth(len(coord_text) * 6)
         super().mouseMoveEvent(event)
 
-    # Make sure coordinate label is in the right place
     def resizeEvent(self, event):
+        # Make sure coordinate label is in the right place
         self.coord_label.move(5, self.viewport().height() -
                               self.coord_label.height() - 5)
         self.coord_label.resize(self.viewport().width(), 20)
         super().resizeEvent(event)
 
-    # Handle manipulating the map zoom
     def wheelEvent(self, event: QtGui.QWheelEvent):
+        # Handle manipulating the map zoom
         delta = event.angleDelta().y()
         zoom_in = delta > 0
         factor = 1.1 if zoom_in else 0.9
@@ -239,16 +272,16 @@ class EditorGraphicsView(QtWidgets.QGraphicsView):  # MARK: Editor
         self.scale(factor, factor)
         self.scale_factor = new_scale
 
-    # Remove focus with ESC
     def keyPressEvent(self, event: QtGui.QKeyEvent):
+        # Remove focus with ESC
         if event.key() == QtCore.Qt.Key_Escape:
             self._setFocusedObjectWidget(None)
             self.render(self.objects)
         else:
             super().keyPressEvent(event)
 
-    # Things to handle on each render that are not default QT drawing stuff
     def drawForeground(self, painter: QtGui.QPainter, rect: QtCore.QRectF):
+        # Things to handle on each render that are not default QT drawing stuff
         # Make sure correct tile has focus
         if self.focusedObject and not self.focusedObjectWidget.hasFocus():
             QtCore.QTimer.singleShot(
@@ -256,8 +289,8 @@ class EditorGraphicsView(QtWidgets.QGraphicsView):  # MARK: Editor
 
         super().drawForeground(painter, rect)
 
-    # Draw the editor background
     def drawBackground(self, painter: QtGui.QPainter, rect: QtCore.QRectF):
+        # Draw the editor background
         super().drawBackground(painter, rect)
 
         left = int(rect.left()) - (int(rect.left()) % self.element_size)
@@ -279,8 +312,8 @@ class EditorGraphicsView(QtWidgets.QGraphicsView):  # MARK: Editor
                              QtCore.QPointF(rect.right(), y))
             y += self.element_size
 
-    # Handle dropped elements
     def _canDrag(self, event: QtGui.QDragEnterEvent | QtGui.QDragMoveEvent):
+        # Handle dropped elements
         if event.mimeData().hasText() and event.mimeData().text().startswith("BDM; "):
             event.setDropAction(QtCore.Qt.DropAction.CopyAction)
             event.accept()
@@ -292,9 +325,8 @@ class EditorGraphicsView(QtWidgets.QGraphicsView):  # MARK: Editor
 
     def dragMoveEvent(self, event: QtGui.QDragMoveEvent): self._canDrag(event)
 
-    # MARK: Drag Event
-    # Triggered when user has picked the location
-    def dropEvent(self, event: QtGui.QDropEvent):
+    def dropEvent(self, event: QtGui.QDropEvent): # MARK: Drag Event
+        # Triggered when user has picked the location
         if event.mimeData().hasText():
             event_mime_text = event.mimeData().text()
             event.setDropAction(QtCore.Qt.DropAction.CopyAction)
@@ -337,7 +369,7 @@ class EditorGraphicsView(QtWidgets.QGraphicsView):  # MARK: Editor
                 event.accept()
             elif event_mime_text == "BDM; new_text":
                 self.addTextEvent.emit(AddTextEvent(
-                    scene_pos.x(), scene_pos.y(), 1, 1))
+                    scene_pos.x(), scene_pos.y()))
                 event.accept()
             else:
                 event.setDropAction(QtCore.Qt.DropAction.IgnoreAction)
@@ -347,9 +379,8 @@ class EditorGraphicsView(QtWidgets.QGraphicsView):  # MARK: Editor
             event.ignore()
             print("WARNING: Drag event did not contain data. Ignored.")
 
-    # MARK: Set focus
-    # Set focused object in the editor
-    def _setFocusedObjectWidget(self, object: TileWidget | TextWidget | None):
+    def _setFocusedObjectWidget(self, object: TileWidget | TextWidget | None): # MARK: Set focus
+        # Set focused object in the editor
         if object == None:
             self.focusedObject = None
             self.focusedObjectWidget = None
@@ -364,9 +395,8 @@ class EditorGraphicsView(QtWidgets.QGraphicsView):  # MARK: Editor
             self.focusObjectEvent.emit(FocusEvent(object.id, object.type))
         self.viewport().update()
 
-    # MARK: Render
-    # Add grid elements to the map
-    def _render_element_object(self, element: Element) -> bool:
+    def _render_element_object(self, element: Element) -> bool: # MARK: Render
+        # Add grid elements to the map
         # Create tile
         tile = TileWidget(element.x * self.element_size,  # x
                           element.y * self.element_size,  # y

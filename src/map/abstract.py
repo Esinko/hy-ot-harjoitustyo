@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import List, Tuple, Any
 from os.path import join
-from types import FunctionType
+from types import FunctionType, MethodType
 from sqlite3 import Connection, connect, Cursor
 from traceback import print_exception
 from uuid import uuid4
@@ -21,34 +21,68 @@ from map.types import (
 
 
 class Map:  # MARK: Map
+    """A single map and methods to control it.
+
+    Attributes:
+        name (str): The maps name.
+        map_file (Path): The Path instance of the map's location on disk.
+        elements (List[Element]): List of elements on the map.
+        _connection (Connection | None): SQLite3 connection of the map.
+        _on_change (MethodType | None): A method, when defined, called when the map is modified.
+    """
     name: str | None
     map_file: Path
     elements: List[Element]
     _connection: Connection | None
-    _on_change: FunctionType | None
-
+    _on_change: MethodType | None
+    
     def __init__(self, map_file: Path, connection: Connection | None = None):
+        """Constructor of the map class.
+
+        Args:
+            map_file (Path): The Path instance of the map on the disk.
+            connection (Connection | None, optional): A connection to be re-used. Defaults to None.
+        """
         self.map_file = map_file
         self.name = None
         self.elements = []
         self._connection = connection
 
-    # Close map from editing
     def close(self):
+        """Close the map when done with it.
+        """
         if self._connection:
             self._connection.close()
             self._connection = None
 
-    # Delete the map itself
     def delete(self):
+        """Delete this map
+        """
         self.close()
         self.map_file.unlink()
 
     def register_on_change(self, listener: FunctionType):
+        """Register a method as the on_change method. Can be called many times.
+
+        Args:
+            listener (FunctionType): Method called when changes happen.
+        """
         self._on_change = listener
 
     # Utility for executing commands against the map
     def _execute(self, query: str, parameters: Tuple[Any] | dict) -> Tuple[Connection, Cursor]:
+        """Execute a SQL command against the map database.
+
+        Args:
+            query (str): The SQL to execute
+            parameters (Tuple[Any] | dict): Parameters for the SQL
+
+        Raises:
+            ValueError: Map is not yet open.
+
+        Returns:
+            Tuple[Connection, Cursor]: Current map connection and the last inserted row id.
+        """
         if not self._connection:
             raise ValueError("Map not open!")
         cursor = self._connection.cursor()
@@ -59,7 +93,20 @@ class Map:  # MARK: Map
         return self._connection, last_inserted_id
 
     # Utility for querying the map
-    def _query(self, query=str, parameters: Tuple[Any] | dict = None, limit: int = -1) -> list[Any]:
+    def _query(self, query="", parameters: Tuple[Any] | dict = None, limit: int = -1) -> list[Any]:
+        """Issue a SQL query against the map database.
+
+        Args:
+            query (_type_, optional): The query to execute.
+            parameters (Tuple[Any] | dict, optional): Parameters for the query. Defaults to None.
+            limit (int, optional): Number of rows to fetch. Defaults to -1.
+
+        Raises:
+            ValueError: Map is not open.
+
+        Returns:
+            list[Any]: List of rows in SQLite3 lib form.
+        """
         if not self._connection:
             raise ValueError("Map not open!")
         cursor = self._connection.cursor()
@@ -71,11 +118,20 @@ class Map:  # MARK: Map
 
     # Call on_change listener
     def _did_change(self):
+        """Called internally to trigger the on_change method, if defined.
+        """
         if self._on_change:
             self._on_change()
 
     # Open the map file
     def open(self):
+        """Open the map for reading and modifications.
+
+        Raises:
+            FileNotFoundError: The path of the map file is invalid
+            ValueError: The map is already open
+            MapMetadataMalformedException: The map's data is malformed and it cannot be opened
+        """
         # Make sure we can open the map
         if not self.map_file or not self.map_file.exists():
             raise FileNotFoundError(
@@ -93,6 +149,14 @@ class Map:  # MARK: Map
 
     # Set the map name
     def set_name(self, name: str) -> str:
+        """Set the name of the map.
+
+        Args:
+            name (str): The new name.
+
+        Returns:
+            str: The name that was set.
+        """
         self._execute(query=sql_table["set_name"], parameters=(name,))
         self.name = name
         return name
@@ -100,17 +164,38 @@ class Map:  # MARK: Map
     # MARK: Map elements
     # Get all the elements
     def get_elements(self) -> List[Element]:
+        """Get all the elements on the map.
+
+        Returns:
+            List[Element]: List of elements on the map.
+        """
         elements_raw, _ = self._query(query=sql_table["get_elements"])
         return [Element(*result) for result in elements_raw]
 
     # Get a single element
     def get_element(self, element_id: int) -> Element | None:
+        """Get an element by id.
+
+        Args:
+            element_id (int): The id of the element.
+
+        Returns:
+            Element | None: The element or none, if not found.
+        """
         element_raw, _ = self._query(
             query=sql_table["get_element"], parameters=(element_id,))
         return Element(*element_raw[0]) if element_raw else None
 
     # Create an element on the map
     def create_element(self, element_editable: ElementEditable) -> Element:
+        """Create a new element on the map.
+
+        Args:
+            element_editable (ElementEditable): Details of the new element's form.
+
+        Returns:
+            Element: The created element.
+        """
         _, element_id = self._execute(query=sql_table["create_element"],
                                       parameters=(element_editable["name"],
                                                   element_editable["x"],
@@ -123,12 +208,32 @@ class Map:  # MARK: Map
 
     # Check if a element with a given id exists
     def element_exists(self, element_id: int) -> bool:
+        """Check if an element exists by id
+
+        Args:
+            element_id (int): The id to check
+
+        Returns:
+            bool: True when element exists.
+        """
         [[result]], _ = self._query(
             query=sql_table["element_exists"], parameters=(element_id,))
         return result == 1
 
     # Edit an element on the map
     def edit_element(self, element_id: int, element_editable: ElementEditable) -> Element:
+        """Edit an element on the map by id.
+
+        Args:
+            element_id (int): The id of the element to edit.
+            element_editable (ElementEditable): The new details of the elements form.
+
+        Raises:
+            ElementNotFoundException: The element to edit was not found.
+
+        Returns:
+            Element: The edited element
+        """
         # Make sure element exists, otherwise use of create_element is required
         if not self.element_exists(element_id):
             raise ElementNotFoundException(element_id)
@@ -168,6 +273,14 @@ class Map:  # MARK: Map
 
     # Remove an element
     def remove_element(self, element_id: int):
+        """Remove an element from the map by id.
+
+        Args:
+            element_id (int): The id of the element to be removed.
+
+        Raises:
+            ElementNotFoundException: The element was not found.
+        """
         if not self.element_exists(element_id):
             raise ElementNotFoundException(element_id)
         self._execute(
@@ -177,18 +290,43 @@ class Map:  # MARK: Map
     # Create a new asset
     # MARK: Map assets
     def create_asset(self, name: str, value: bytes) -> Asset:
+        """Create a new asset in the map database.
+
+        Args:
+            name (str): Name of the new asset.
+            value (bytes): The raw bytes of the asset.
+
+        Returns:
+            Asset: The created asset.
+        """
         _, asset_id = self._execute(
             query=sql_table["create_asset"], parameters=(name, value))
         return Asset(asset_id, name, value)
 
     # Check if asset exists
     def asset_exists(self, asset_id: int) -> bool:
+        """Check that an asset exists by id.
+
+        Args:
+            asset_id (int): The id of the asset to check.
+
+        Returns:
+            bool: True when the asset exists.
+        """
         [[result]], _ = self._query(
             query=sql_table["asset_exists"], parameters=(asset_id,))
         return result == 1
 
     # Remove an asset
     def remove_asset(self, asset_id: int):
+        """Remove an asset from the map database.
+
+        Args:
+            asset_id (int): The id of the asset to remove.
+
+        Raises:
+            AssetNotFoundException: The asset was not found.
+        """
         if not self.asset_exists(asset_id):
             raise AssetNotFoundException(asset_id)
         self._execute(query=sql_table["remove_asset"], parameters=(asset_id,))
@@ -196,6 +334,17 @@ class Map:  # MARK: Map
     # Create text object
     # MARK: Map text
     def create_text(self, name: str, text: str, x: int, y: int) -> MapText:
+        """Create a text object on the map
+
+        Args:
+            name (str): The name of the text object.
+            text (str): The text inside the text object.
+            x (int): X coordinate (true).
+            y (int): Y coordinate (true).
+
+        Returns:
+            MapText: The created text.
+        """
         _, text_id = self._execute(
             query=sql_table["create_text"], parameters=(name, text, x, y))
         self._did_change()
@@ -203,23 +352,56 @@ class Map:  # MARK: Map
 
     # Get a single text object
     def get_text(self, text_id: int) -> MapText | None:
+        """Get text object by id.
+
+        Args:
+            text_id (int): The id of the text.
+
+        Returns:
+            MapText | None: The text object or None if not found.
+        """
         text_raw, _ = self._query(
             query=sql_table["get_text"], parameters=(text_id,))
         return MapText(*text_raw[0]) if text_raw else None
 
     # Get all text objects
     def get_text_list(self):
+        """Get list of all text objects on the map.
+
+        Returns:
+            List[MapText]: List of text objects.
+        """
         texts_raw, _ = self._query(query=sql_table["get_all_text"])
         return [MapText(*result) for result in texts_raw]
 
     # Check if a certain text object exists
     def text_exists(self, text_id: int) -> bool:
+        """Check that a text object exits on the map by id.
+
+        Args:
+            text_id (int): The id of the text object.
+
+        Returns:
+            bool: True when the text object exists.
+        """
         [[result]], _ = self._query(
             query=sql_table["text_exists"], parameters=(text_id,))
         return result == 1
 
     # Edit text object
     def edit_text(self, text_id: int, text_editable: TextEditable) -> MapText:
+        """Edit a text object on the map.
+
+        Args:
+            text_id (int): The id of the text object to edit.
+            text_editable (TextEditable): The details of the text objects new form.
+
+        Raises:
+            TextNotFoundException: The text object was not found.
+
+        Returns:
+            MapText: The edited text object.
+        """
         # Make sure text exists, if not, create must be used
         if not self.text_exists(text_id):
             raise TextNotFoundException(text_id)
@@ -240,6 +422,14 @@ class Map:  # MARK: Map
 
     # Remove text
     def remove_text(self, text_id: int):
+        """Remove a text object from the map.
+
+        Args:
+            text_id (int): The id of the text to be removed.
+
+        Raises:
+            TextNotFoundException: The text object was not found.
+        """
         if not self.text_exists(text_id):
             raise TextNotFoundException(text_id)
         self._execute(query=sql_table["remove_text"], parameters=(text_id,))
@@ -247,12 +437,31 @@ class Map:  # MARK: Map
 
 
 class MapStore:  # MARK: MapStore
+    """Used to manage maps in a central store.
+
+    Attributes:
+        store_folder (Path): The location of the map store.
+        _maps (List[Map]): Cache of maps in the sore.
+        schema_file (Path): Path to the map schema.
+        init_file (Path): Path to the map init SQL.
+    """
     store_folder: Path
     _maps: List[Map]
     schema_file: Path
     init_file: Path
 
     def __init__(self, path: str, init_path: str | None = None, schema_path: str | None = None):
+        """Constructor of the map store class.
+
+        Args:
+            path (str): Path of the map store
+            init_path (str | None): Path of the map init file.
+            schema_path (str | None): Path of the map schema file.
+
+        Raises:
+            FileNotFoundError: The init or schema file is missing
+            NotADirectoryError: The given store folder path is not a directory.
+        """
         self.store_folder = Path(path)
         self._maps = []
 
@@ -273,6 +482,14 @@ class MapStore:  # MARK: MapStore
 
     # Get all the maps in the store
     def list(self, no_refresh: bool = False) -> List[Map]:
+        """List all the maps in the map store.
+
+        Args:
+            no_refresh (bool, optional): If to use the cache or not. Defaults to False.
+
+        Returns:
+            List[Map]: A list of maps in the map store.
+        """
         # If we just want to get the list without checking the folder
         if no_refresh:
             return self._maps
@@ -300,6 +517,14 @@ class MapStore:  # MARK: MapStore
 
     # Get a single map with the filename
     def get(self, map_filename: str) -> Map | None:
+        """Get a map from the store with it's filename (id).
+
+        Args:
+            map_filename (str): The map's filename.
+
+        Returns:
+            Map | None: The map from the store or None when not found.
+        """
         # Attempt to reuse connection
         for single_map in self._maps:
             if single_map.map_file.name == map_filename:
@@ -314,10 +539,19 @@ class MapStore:  # MARK: MapStore
             self._maps.append(opened_map)
             return opened_map
 
-        return None  # Fallback
+        return None # Fallback
     
     # Export a map to a specific location
     def export(self, map: Map, location: str):
+        """Export a map from the store to some location (copy action)
+
+        Args:
+            map (Map): The map to export.
+            location (str): The location to export to.
+
+        Raises:
+            InvalidPathException: The given path to export to is invalid.
+        """
         try:
             target_location = Path(location)
         except TypeError:
@@ -328,6 +562,17 @@ class MapStore:  # MARK: MapStore
 
     # Add a map to the map store from a specified location
     def add(self, location: str) -> Map | None:
+        """Add a map to the store from a specified location (copy action)
+
+        Args:
+            location (str): The location of the map to add to the store.
+
+        Raises:
+            InvalidPathException: The given path was invalid.
+
+        Returns:
+            Map | None: The added map or None if not possible.
+        """
         try:
             map_file = Path(location)
         except TypeError:
@@ -340,7 +585,7 @@ class MapStore:  # MARK: MapStore
             loaded_map.close()
         except MapMetadataMalformedException:
             print("ERROR: Map to be loaded is invalid!")
-            return
+            return None
         
         # Copy map to store
         map_location = self.store_folder.absolute() / f"{uuid4()}.dmap"
@@ -351,12 +596,26 @@ class MapStore:  # MARK: MapStore
 
     # Close the store
     def close(self):
+        """Close the map store's map database connections.
+        """
         # Close old connections
         for a_map in self._maps:
             a_map.close()
 
     # Create a new map
     def create_map(self, name: str, filename: str) -> Map:
+        """Create a new map in the map store.
+
+        Args:
+            name (str): The name of the new map.
+            filename (str): The filename of the new map (id)
+
+        Raises:
+            FileExistsError: The map already exists.
+
+        Returns:
+            Map: The created map.
+        """
         # Make sure file-ending is right
         if not filename.endswith(".dmap"):
             filename = f"{filename}.dmap"

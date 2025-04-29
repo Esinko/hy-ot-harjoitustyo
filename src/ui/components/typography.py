@@ -2,6 +2,8 @@ from PySide6 import QtWidgets, QtGui, QtCore
 
 
 class GraphicsLabel(QtWidgets.QGraphicsTextItem):
+    """A styled text label.
+    """
     def __init__(
         self,
         backgroundColor: QtGui.QColor,

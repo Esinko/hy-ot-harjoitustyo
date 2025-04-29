@@ -7,7 +7,15 @@ from ui.view import View
 
 
 class CreateView(View):
+    """View that allows the user to create a new map with a specific name in a specific map store.
+    """
     def _create_map(self, map_store: MapStore, name: str):
+        """Private method called when a new map is to be created.
+
+        Args:
+            map_store (MapStore): The map store to create the new map in.
+            name (str): The name of the new map.
+        """
         if len(name) > 0:
             map_store.create_map(name, f"{uuid4()}.dmap")
             self.change_view("select_map")  # TODO: Change to editor?

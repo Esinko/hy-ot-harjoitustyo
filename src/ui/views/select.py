@@ -7,13 +7,27 @@ from ui.view import View
 
 
 class SelectView(View):
+    """Allows the user to select the map to edit and trigger actions against specific maps from the UI.
+    """
+
     def _export_map(self, option, event: SelectPathEvent):
+        """Private method called when the user wants to export a specific map.
+
+        Args:
+            option: The selected option (map)
+            event (SelectPathEvent): The selected path provided by the OS's path select popup.
+        """
         self.context.map_store.export(
             self.context.map_store.get(option["id"]), 
             event.path
         )
 
     def _import_map(self, event: SelectFileEvent):
+        """Private method called when the user wants to import a map from a specific location.
+
+        Args:
+            event (SelectFileEvent): The selected file provided by the OS's path select popup.
+        """
         self.context.map_store.add(event.file.absolute())
         self.change_view("select_map") # Refreshes the view
 

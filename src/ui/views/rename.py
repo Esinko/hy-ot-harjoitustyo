@@ -6,7 +6,16 @@ from ui.view import View, Views
 
 
 class RenameView(View):
+    """A view that allows the user to rename a specific map.
+    """
     def _rename_map(self, map: Map, new_name: str, goto: Views):
+        """Private method called when a specific map is to be renamed.
+
+        Args:
+            map (Map): The map to be renamed.
+            new_name (str): The new name of the map.
+            goto (Views): The view to change to after renaming the map.
+        """
         map.set_name(new_name)
         # NOTE: Does not handle all views!
         if goto == "select_map":

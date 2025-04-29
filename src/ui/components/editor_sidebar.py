@@ -2,6 +2,8 @@ from PySide6 import QtWidgets, QtCore
 
 
 class EditorSidebar(QtWidgets.QWidget):
+    """Styled base widget for the editor sidebar.
+    """
     sidebar_layout: QtWidgets.QVBoxLayout
 
     def __init__(self, parent):

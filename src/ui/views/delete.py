@@ -5,7 +5,14 @@ from ui.view import View
 
 
 class DeleteView(View):
+    """View that allows the user to choose to delete a specific map.
+    """
     def _delete_map(self, map: Map):
+        """Private method called to delete a specific map.
+
+        Args:
+            map (Map): The map to delete.
+        """
         map.delete()
         self.change_view("select_map")
 

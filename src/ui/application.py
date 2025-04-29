@@ -13,12 +13,21 @@ class SelectOption(TypedDict):
     id: str
     text: str
 
+# TODO: Refactor BaseWindow and application as a combined ApplicationWindow class
 
 class BaseWindow(QtWidgets.QWidget): # MARK: Base window
+    """The main widget inside the QT window.
+
+    Attributes:
+        change_view (Changer): Method of changing the views inside the application.
+        current_view (View | None): The view currently on display. None when empty.
+    """
     change_view: Changer
     current_view: View | None
 
     def __init__(self, change_view: QtCore.Slot):
+        """Constructor of the main widget. Styles the widget and adds a loading placeholder.
+        """
         super().__init__()
         self.setWindowTitle("Blocky Dungeon Mapper")
         self.change_view = change_view
@@ -39,6 +48,9 @@ class BaseWindow(QtWidgets.QWidget): # MARK: Base window
         self.setLayout(loading_layout)
 
     def clear_window(self):
+        """Method for clearing the contents of the window.
+        Primes it for loading a new view.
+        """
         old_layout = self.layout()
 
         # If old layout is present, we need to remove it
@@ -79,6 +91,11 @@ class BaseWindow(QtWidgets.QWidget): # MARK: Base window
 
     # MARK: Editor view
     def open_editor_view(self, map: Map):
+        """Open the editor view inside the window.
+
+        Args:
+            map (Map): The map to edit.
+        """
         self.clear_window()
         editor_view = EditorView(ViewContext(map=map), self.change_view)
         editor_view.open()
@@ -87,15 +104,27 @@ class BaseWindow(QtWidgets.QWidget): # MARK: Base window
 
     # MARK: Create view
     def open_create_view(self, map_store: MapStore):
-       self.clear_window()
-       create_view = CreateView(ViewContext(map_store=map_store),
-                                self.change_view)
-       create_view.open()
-       self.setLayout(create_view.layout)
-       self.current_view = create_view
+        """Open the create new map view inside the window.
+
+        Args:
+            map_store (MapStore): The map store to create the new map in.
+        """
+        self.clear_window()
+        # TODO: Can we design this view in a way to not need to use map_store directly?
+        create_view = CreateView(ViewContext(map_store=map_store),
+                                    self.change_view)
+        create_view.open()
+        self.setLayout(create_view.layout)
+        self.current_view = create_view
 
     # MARK: Rename view
     def open_rename_view(self, map: Map, to_view: Views):
+        """Open the rename view inside the window.
+
+        Args:
+            map (Map): _The map to rename.
+            to_view (Views): The view to change after renaming or canceling.
+        """
         self.clear_window()
         rename_view = RenameView(ViewContext(map=map, parameters=[to_view]),
                                  self.change_view)
@@ -105,6 +134,11 @@ class BaseWindow(QtWidgets.QWidget): # MARK: Base window
 
     # MARK: Delete view
     def open_delete_view(self, map: Map):
+        """Open the delete view inside the window.
+
+        Args:
+            map (Map): The map to be potentially deleted.
+        """
         self.clear_window()
         delete_view = DeleteView(ViewContext(map=map), self.change_view)
         delete_view.open()
@@ -113,7 +147,14 @@ class BaseWindow(QtWidgets.QWidget): # MARK: Base window
 
     # MARK: Select view
     def open_select_view(self, map_store: MapStore, options: List[SelectOption]):
+        """Open the select map (list view) view inside the window
+
+        Args:
+            map_store (MapStore): Map store to pass to the view
+            options (List[SelectOption]): List options to pass to the view
+        """
         self.clear_window()
+        # TODO: Can we design this view in a way to not use map_store directly and opt for map instead?
         select_view = SelectView(ViewContext(parameters=[options], map_store=map_store), 
                                  self.change_view)
         select_view.open()
@@ -121,19 +162,36 @@ class BaseWindow(QtWidgets.QWidget): # MARK: Base window
         self.current_view = select_view
 
 class Application: # MARK: Application
+    """The main application class
+
+    Attributes:
+        _app (QApplication): The QT application reference
+        window: The window inside the application, when created
+        map_store: The map store to be used by the application
+    """
     _app: QtWidgets.QApplication
     window: BaseWindow
     map_store: MapStore
 
     def __init__(self, map_store: MapStore):
+        """The constructor of the application class, which initializes the BaseWindow and QApplication.
+
+        Args:
+            map_store (MapStore): The map store to use in the application.
+        """
         self._app = QtWidgets.QApplication([])
         self.window = BaseWindow(self.change_to_view)
         self.map_store = map_store
 
-    # Handle changing application views
     # TODO: Would it be better to store all the parameters in the BaseWindow class as privates?
     # TODO: Find a way to maintain proper logical separation of map_store and map usage
     def change_to_view(self, view_name: Views, option: Any = None):
+        """Change the view inside the window
+
+        Args:
+            view_name (Views): The view to change to.
+            option (Any, optional): Any view specific parameters. Defaults to None.
+        """
         if view_name == "select_map":
             self.window.open_select_view(
                 self.map_store,
@@ -154,6 +212,12 @@ class Application: # MARK: Application
 
     # Open the main window
     def open(self, width: int = 800, height: int = 600):
+        """Open the application window.
+
+        Args:
+            width (int, optional): The width of the application window. Defaults to 800.
+            height (int, optional): The height of the application window. Defaults to 600.
+        """
         self.window.resize(width, height)
         self.window.show()
 

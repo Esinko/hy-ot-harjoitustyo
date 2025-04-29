@@ -8,7 +8,16 @@ from ui.components.editor_properties.text import TextPropertiesWidget
 from ui.view import View
 
 class EditorView(View):
+    """The editor view, in which the user can edit and view a specific map.
+    """
     def _create_element(self, map: Map, x: int, y: int):
+        """Private method called when a new element is to be created in a specific location.
+
+        Args:
+            map (Map): The map to create the element in.
+            x (int): The X coordinate of the element to be created (1/256)
+            y (int): The Y coordinate of the element to be created (1/256)
+        """
         map.create_element({
             "name": "Unnamed Tile",
             "x": x,
@@ -18,15 +27,38 @@ class EditorView(View):
         })
 
     def _create_text(self, map: Map, x: int, y: int):
+        """Private method called when a new text object is to be created on a specific map.
+
+        Args:
+            map (Map): The map to create the text object in.
+            x (int): The X coordinate of the text to be created (true)
+            y (int): The Y coordinate of the text to be created (true)
+        """
         map.create_text("Unnamed Text", "Text", x, y)
 
     def _move_element(self, map: Map, id: int, x: int, y: int):
+        """Private method called when a specific element is to be moved to a new location in a specific map.
+
+        Args:
+            map (Map): The map in which to move a specific element.
+            id (int): The id of the element to move.
+            x (int): The new X coordinate of the element (1/256)
+            y (int): The new Y coordinate of the element (1/256)
+        """
         edited_element = map.get_element(id).to_dict()
         edited_element["x"] = x
         edited_element["y"] = y
         map.edit_element(id, edited_element)
 
     def _move_text(self, map: Map, id: int, x: int, y: int):
+        """Private method called when a specific text object is to be moved to a new location in a specific map.
+
+        Args:
+            map (Map): The map in which to move the text object.
+            id (int): The id of the text object to move.
+            x (int): The new X coordinate of the text object (true)
+            y (int): The new Y coordinate of the text object (true)
+        """
         edited_text = map.get_text(id).to_dict()
         edited_text["x"] = x
         edited_text["y"] = y

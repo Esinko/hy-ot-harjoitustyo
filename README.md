@@ -15,7 +15,7 @@ Elementin asetuksien muokkauspaneli aukeaa editorin oikealle puolelle. Voit sulk
 - [Käyttöohje](./dokumentaatio/kayttoohje.md)
 - [Vaatimusmäärittely](./dokumentaatio/vaatimusmaarittely.md)
 - [Työaikakirjanpito](./dokumentaatio/tyoaikakirjanpito.md)
-- [Changelog](./dokumentaation/changelog.md)
+- [Changelog](./dokumentaatio/changelog.md)
 - [Arkkitehtuuri](./dokumentaatio/arkkitehtuuri.md)
 - [Release 2](https://github.com/Esinko/hy-ot-harjoitustyo/releases/tag/viikko6)
 

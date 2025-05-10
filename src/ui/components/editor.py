@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from copy import deepcopy
 from PySide6 import QtWidgets, QtGui, QtCore
 from map.types import Element
 from typing import List, Literal, Union
@@ -183,12 +184,15 @@ class EditorGraphicsView(QtWidgets.QGraphicsView):  # MARK: Editor
     moveElementEvent = QtCore.Signal(MoveElementEvent)
     addTextEvent = QtCore.Signal(AddTextEvent)
     moveTextEvent = QtCore.Signal(MoveTextEvent)
+    pasteElementEvent = QtCore.Signal(Element)
+    pasteTextEvent = QtCore.Signal(MapText)
     focusObjectEvent = QtCore.Signal(FocusEvent)
     objects: ObjectsList = []
     objectWidgets: List[Union[TileWidget, TextWidget]] = []
     focusedObjectWidget: TileWidget | TextWidget | None = None
     focusedObject: MapText | Element | None = None
     is_preview: bool
+    clipboard: MapText | Element | None = None
 
     def __init__(self, is_preview: bool = False):
         """Constructor of the editor. Styles the graphics view and scales it.
@@ -280,10 +284,24 @@ class EditorGraphicsView(QtWidgets.QGraphicsView):  # MARK: Editor
         self.scale_factor = new_scale
 
     def keyPressEvent(self, event: QtGui.QKeyEvent):
-        # Remove focus with ESC
         if event.key() == QtCore.Qt.Key_Escape:
+            # Remove focus with ESC
             self._setFocusedObjectWidget(None)
             self.render(self.objects)
+        elif event.key() == QtCore.Qt.Key_C and event.modifiers() & QtCore.Qt.ControlModifier and self.focusedObject:
+            # Copy element with CTRL+C
+            self.clipboard = deepcopy(self.focusedObject)
+        elif event.key() == QtCore.Qt.Key_V and event.modifiers() & QtCore.Qt.ControlModifier and self.clipboard:
+            # Paste element with CTRL+V
+            # Element index to one to the right
+            if isinstance(self.clipboard, MapText):
+                self.clipboard.x += 256
+                self.pasteTextEvent.emit(self.clipboard)
+            elif isinstance(self.clipboard, Element):
+                self.clipboard.x += 1
+                self.pasteElementEvent.emit(self.clipboard)
+            else:
+                print("ERROR: Cannot copy unsupported object!")
         else:
             super().keyPressEvent(event)
 

@@ -38,7 +38,7 @@ sql_table = {
         WHERE Elements.id = ?;
     """,
 
-    "create_element": "INSERT INTO Elements (name, x, y, width, height) VALUES (?, ?, ?, ?, ?);",
+    "create_element": "INSERT INTO Elements (name, x, y, width, height, background_image) VALUES (?, ?, ?, ?, ?, ?);",
 
     "edit_element": """
         UPDATE Elements SET

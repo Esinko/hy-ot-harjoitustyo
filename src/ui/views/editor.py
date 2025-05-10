@@ -1,7 +1,7 @@
 from operator import concat
 from PySide6 import QtWidgets, QtCore, QtGui
 from os.path import abspath
-from map.entity import Map
+from map.entity import Map, Element, MapText
 from ui.components.buttons import AddElementButtonWidget, AddTextButtonWidget, StandardButtonWidget
 from ui.components.editor import EditorGraphicsView
 from ui.components.editor_properties.element import ElementPropertiesWidget
@@ -67,6 +67,34 @@ class EditorView(View):
         edited_text["x"] = x
         edited_text["y"] = y
         map.edit_text(id, edited_text)
+
+    def _insert_element(self, map: Map, element: Element):
+        """Private method called when a specific element should be inserted to the map.
+
+        Args:
+            map (Map): The map to which insert the element.
+            element (Element): The element to insert.
+        """
+
+        element_to_insert = element.to_dict()
+        del element_to_insert["id"]
+        map.create_element(element_to_insert)
+
+    def _insert_text(self, map: Map, text: MapText):
+        """Private method called when a specific text should be inserted to the map.
+
+        Args:
+            map (Map): The map to which insert the text.
+            text (MapText): The text to insert.
+        """
+
+        text_to_insert = text.to_dict()
+        # FIXME: Refactor of object handling will unify this with insert_element,
+        #        but for now we must create a dummy text object and then edit it
+        #        to add all attributes to it.
+        created_text = map.create_text("", "", text_to_insert["x"], text_to_insert["y"])
+        text_to_insert["id"] = created_text.id
+        map.edit_text(created_text.id, text_to_insert)
 
     def open(self):
         # Change to vertical layout
@@ -169,6 +197,10 @@ class EditorView(View):
             lambda event: self._create_text(map, event.x, event.y))
         editor_area.moveTextEvent.connect(
             lambda event: self._move_text(map, event.id, event.x, event.y))
+        editor_area.pasteElementEvent.connect(
+            lambda element: self._insert_element(map, element))
+        editor_area.pasteTextEvent.connect(
+            lambda text: self._insert_text(map, text))
 
         # Element Properties side bar
         element_properties_sidebar = ElementPropertiesWidget()

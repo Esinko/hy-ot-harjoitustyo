@@ -193,12 +193,20 @@ class Map:  # MARK: Map
         Returns:
             Element: The created element.
         """
+        # If background is present, create asset
+        new_asset_id = None
+        if "background_image" in element_editable and element_editable["background_image"]:
+            new_asset = self.create_asset(element_editable["background_image"]["name"],
+                                          bytes(element_editable["background_image"]["data"]))
+            new_asset_id = new_asset.id
+
         _, element_id = self._execute(query=sql_table["create_element"],
                                       parameters=(element_editable["name"],
                                                   element_editable["x"],
                                                   element_editable["y"],
                                                   element_editable["width"],
-                                                  element_editable["height"]))
+                                                  element_editable["height"],
+                                                  new_asset_id))
         created_element = self.get_element(element_id)
         self._did_change()
         return created_element

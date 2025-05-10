@@ -111,7 +111,7 @@ class Element:  # MARK: Element
         self.background_image = Asset(raw[7],
                                       raw[8],
                                       raw[9]) if raw[7] else None
-        self.background_color = raw[9]
+        self.background_color = raw[10]
         self.rotation = raw[6]
 
     def to_dict(self) -> ElementEditable:

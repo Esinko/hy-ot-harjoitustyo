@@ -10,6 +10,9 @@
 | 15.4.2025 | 10 | lisätty teksti-objektit karttaan, karttojen uudelleennimeäminen, release 1 ja sekvenssikaavio |
 | 15.4.2025 | 6 | lisätty import & export ominaisuudet ja refaktroitoitu UI-koodia |
 | 15.4.2025 | 6 | refaktoiroitu projektin rakennetta, lisätty testejä ja paranneltu dokumentaatiota |
+| 28.4.2025 | 5 | import & export -ominaisuudet, omat view-tiedostot |
+| 29.4.2025 | 5 | docstring dokumentaatio, kartanhallinan refaktorointi |
+| 8.5.2025 | 2 | toteutettu custom dropdown komponentti |
+| 10.5.2025 | 7 | kopio kuva ja sisällytetyt kuvat -ominaisuus, viewer-tila |
 
-
-**SUMMA:** `38` h
+**SUMMA:** `57` h

@@ -14,9 +14,7 @@ Sovelluksessa ei ole erilaisia käyttäjätyyppejä.
     - `tehty` Käyttäjä voi viedä kartan valitsemaansa sijaintiin
     - `tehty` Käyttäjä voi tuoda kartan valitsemastaan sijainnista
 - Muokkaaminen ja luonti (editori)
-    - Käyttäjä voi muokata kartan elementtien väriä ja taustakuvaa
-        - `tehty` Neliöiden taustakuva
-        - `tehty` Tekstin väri
+    - `tehty` Käyttäjä voi muokata kartan elementtien väriä ja taustakuvaa
     - `tehty` Käyttäjä voi lisätä kartalle elementtejä (neliö)
     - `tehty` Käyttäjä voi lisätä karttalle tekstiä
     - Käyttäjä voi määrittää muotojen ja merkintöjen sijainnin ja koon

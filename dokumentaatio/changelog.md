@@ -46,3 +46,9 @@
 - Lisätty käyttöhje
 - Laajennettu testejä ja korjattu virhe karttojen luonnissa
 - Siistitty repositorioita
+
+## Viikko 7 (10.5.2025)
+- Lisätty viewer-mode editoriin
+- Lisätty mahdollisuus kopioida toisen ruudun kuva toiseen ruutuun
+- Lisätty disabled-tila poista-napeille, kun ne eivät ole käytössä
+- Lisätty mahdollisuus valita tausta ruuduille sisällytetyistä kuvista

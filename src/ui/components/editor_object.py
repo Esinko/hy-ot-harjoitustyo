@@ -31,6 +31,8 @@ class EditorObject(QtCore.QObject, QtWidgets.QGraphicsRectItem):
         self.id = object_id
         self.type = type
 
+        self.setPen(QtCore.Qt.NoPen)
+
         # Mouse config and zValue
         self.setAcceptedMouseButtons(
             QtCore.Qt.MouseButton.LeftButton | QtCore.Qt.MouseButton.RightButton)
@@ -51,6 +53,14 @@ class EditorObject(QtCore.QObject, QtWidgets.QGraphicsRectItem):
             painter.setPen(QtGui.QPen(QtGui.QColor("white"), 4))
             painter.drawEllipse(
                 center, self.edit_circle_radius, self.edit_circle_radius)
+            
+            # Add outline
+            self.setZValue(100)
+            pen = QtGui.QPen(QtGui.QColor("#F89B2E"), 2)
+            pen.setCosmetic(True)
+            painter.setPen(pen)
+            painter.setBrush(QtCore.Qt.BrushStyle.NoBrush)
+            painter.drawRect(self.rect())
 
     # Only allow right mouse button to set focus
     def focusInEvent(self, event: QtGui.QFocusEvent):

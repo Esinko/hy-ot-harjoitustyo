@@ -81,6 +81,10 @@ class IconButtonWidget(QtWidgets.QPushButton):
                 background: qlineargradient(x1:0, y1:1, x2:0, y2:0,
                                             stop:0 #FDA239, stop:1 #F0851B);
             }
+            QPushButton:disabled {
+                background: qlineargradient(x1:0, y1:1, x2:0, y2:0,
+                                            stop:0 #535353, stop:1 #646464);
+            }
         """)
         self.setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.PointingHandCursor))
 
@@ -172,6 +176,10 @@ class StandardButtonWidget(QtWidgets.QPushButton):
             QPushButton:hover {
                 background: qlineargradient(x1:0, y1:1, x2:0, y2:0,
                                             stop:0 #FDA239, stop:1 #F0851B);
+            }
+            QPushButton:disabled {
+                background: qlineargradient(x1:0, y1:1, x2:0, y2:0,
+                                            stop:0 #535353, stop:1 #646464);
             }
         """)
         self.setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.PointingHandCursor))

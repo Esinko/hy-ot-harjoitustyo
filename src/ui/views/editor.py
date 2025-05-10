@@ -1,10 +1,12 @@
 from operator import concat
-from PySide6 import QtWidgets, QtCore
+from PySide6 import QtWidgets, QtCore, QtGui
+from os.path import abspath
 from map.entity import Map
 from ui.components.buttons import AddElementButtonWidget, AddTextButtonWidget, StandardButtonWidget
 from ui.components.editor import EditorGraphicsView
 from ui.components.editor_properties.element import ElementPropertiesWidget
 from ui.components.editor_properties.text import TextPropertiesWidget
+from ui.components.inputs import StandardDropdownWidget
 from ui.view import View
 
 
@@ -90,7 +92,13 @@ class EditorView(View):
         top_bar.setFixedHeight(32)
         top_bar_layout = QtWidgets.QHBoxLayout(top_bar)
         top_bar_layout.setContentsMargins(5, 3, 5, 3)
-        top_bar_layout.setSpacing(3)
+        top_bar_layout.setSpacing(5)
+
+        # Map icon
+        map_icon_label = QtWidgets.QLabel()
+        map_icon = QtGui.QPixmap(abspath("./ui/icons/map.svg"))
+        map_icon_label.setPixmap(map_icon.scaled(24, 24, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation))
+        map_icon_label.setFixedSize(24, 24)
 
         # Map name on the left
         map_name = QtWidgets.QLabel(f"Map: {map.name}")
@@ -115,6 +123,7 @@ class EditorView(View):
         top_bar_right_layout.addWidget(close_button)
 
         # Join top bar sides
+        top_bar_layout.addWidget(map_icon_label)
         top_bar_layout.addWidget(map_name)
         top_bar_layout.addStretch()
         top_bar_layout.addWidget(top_bar_right)
@@ -128,11 +137,16 @@ class EditorView(View):
         toolbar_layout.setContentsMargins(5, 0, 5, 0)
         toolbar_layout.setAlignment(QtCore.Qt.AlignmentFlag.AlignLeft)
 
+        # View mode dropdown
+        view_mode_dropdown = StandardDropdownWidget(options=["Editor", "Viewer"])
+
         # Add buttons
         add_element = AddElementButtonWidget()
         add_text = AddTextButtonWidget()
         toolbar_layout.addWidget(add_element)
         toolbar_layout.addWidget(add_text)
+        toolbar_layout.addStretch()
+        toolbar_layout.addWidget(view_mode_dropdown)
 
         # Create main editor area (100% <-> x split)
         main = QtWidgets.QWidget()
@@ -142,6 +156,8 @@ class EditorView(View):
 
         # Actual editor area
         editor_area = EditorGraphicsView()
+        view_mode_dropdown.currentIndexChanged.connect(lambda index: editor_area.set_preview(index == 1))
+        main_layout.addWidget(editor_area)
 
         # MARK: Editor events
         # Handle editor events
@@ -154,20 +170,12 @@ class EditorView(View):
         editor_area.moveTextEvent.connect(
             lambda event: self._move_text(map, event.id, event.x, event.y))
 
-        def render_lambda(): return editor_area.render(
-            concat(map.get_elements(),
-                   map.get_text_list()))
-        # When elements change, this is ran
-        map.register_on_change(render_lambda)
-        main_layout.addWidget(editor_area)
-
-        # Initial render pass for editor
-        render_lambda()
-
         # Element Properties side bar
         element_properties_sidebar = ElementPropertiesWidget()
         editor_area.focusObjectEvent.connect(
-            # TODO: Handle different types of objects
+            lambda: element_properties_sidebar.setAssets(map.get_assets())
+        )
+        editor_area.focusObjectEvent.connect(
             lambda event: (
                 element_properties_sidebar.setElement(
                     map.get_element(event.id))
@@ -192,15 +200,23 @@ class EditorView(View):
             lambda event: map.remove_text(event.id)
         )
         editor_area.focusObjectEvent.connect(
-            # TODO: Handle different types of objects
             lambda event: (
                 text_properties_sidebar.setText(map.get_text(event.id))
                 if event.id != None and event.type == "text" else
                 text_properties_sidebar.setText(None)
             )
         )
-
         main_layout.addWidget(text_properties_sidebar)
+
+        # When elements change, this is ran
+        def render_lambda():
+            editor_area.render(concat(map.get_elements(),
+                                      map.get_text_list()))
+            
+        map.register_on_change(render_lambda)
+
+        # Initial render
+        render_lambda()
 
         self.layout.addWidget(top_bar)
         self.layout.addWidget(toolbar)

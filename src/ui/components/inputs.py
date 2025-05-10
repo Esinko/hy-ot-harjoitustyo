@@ -1,7 +1,9 @@
 from PySide6 import QtWidgets, QtGui, QtCore
 from os.path import abspath
+from dataclasses import dataclass
 from ui.components.buttons import StandardButtonWidget
 from pathlib import Path
+from typing import List, TypedDict
 
 
 class TextInputWidget(QtWidgets.QLineEdit):
@@ -319,7 +321,7 @@ class ColorInputWidget(InputGroupWidget):
     def _choose_color(self):
         """Private method that opens the native OS provided color picker.
         """
-        color = QtWidgets.QColorDialog.get_color(
+        color = QtWidgets.QColorDialog.getColor(
             self.color, self.parentWidget())
         if color.isValid():
             self.color = color
@@ -348,3 +350,132 @@ class ColorInputWidget(InputGroupWidget):
         """
         self.color_preview.setStyleSheet(
             f"background-color: {self.color.name()}; border: 1px solid #393939;")
+
+class ComplexOption(TypedDict):
+    id: str | int | None
+    text: str
+
+class SelectedAction(ComplexOption):
+    item_index: int
+    group_index: int
+
+@dataclass
+class DropdownGroup:
+    name: str
+    options: List[ComplexOption | str]
+
+class StandardDropdownWidget(QtWidgets.QWidget):
+    """Dropdown styled to look like a button. Drop-in replacement for ComboBox.
+    """
+
+    selectEvent = QtCore.Signal(ComplexOption)
+    currentIndexChanged = QtCore.Signal(int)
+    button: QtWidgets.QToolButton
+
+    def _fallback_signal(self, i, text):
+        self.currentIndexChanged.emit(i)
+        self.button.setText(text)
+
+    def __init__(self, text: str | None = None, options: List[DropdownGroup | str] = []):
+        super().__init__()
+        layout = QtWidgets.QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        self.button = QtWidgets.QToolButton()
+        self.button.setPopupMode(QtWidgets.QToolButton.InstantPopup)
+        self.setStyleSheet("""
+            QToolButton {
+                color: white;
+                background: qlineargradient(x1:0, y1:1, x2:0, y2:0,
+                                            stop:0 #373737, stop:1 #535353);
+                border: 1px solid #292929;
+                border-radius: 4px;
+                padding: 4px 28px 4px 8px; /* extra right padding for arrow */
+                text-align: left;
+            }
+            QToolButton:disabled {
+                background: qlineargradient(x1:0, y1:1, x2:0, y2:0,
+                                            stop:0 #535353, stop:1 #646464);
+            }
+            QToolButton::menu-indicator {
+                image: url(ui/icons/chevron-down.svg);
+                width: 14px;
+                height: 14px;
+                subcontrol-position: right center;
+                subcontrol-origin: padding;
+                padding-left: 4px;
+                padding-right: 4px;
+                border-left: 1px solid #292929; /* vertical line */
+            }
+            QToolButton:hover {
+                background: qlineargradient(x1:0, y1:1, x2:0, y2:0,
+                                            stop:0 #FDA239, stop:1 #F0851B);
+            }
+        """)
+
+        # Set text
+        if not text and isinstance(options[0], str):
+            self.button.setText(options[0])
+        else:
+            self.button.setText(text)
+
+        # Create menu
+        self.menu = QtWidgets.QMenu()
+        self.menu.setStyleSheet("""
+            QMenu {
+                background: qlineargradient(x1:0, y1:1, x2:0, y2:0,
+                                            stop:0 #373737, stop:1 #535353);
+                color: white;
+                border: 1px solid #292929;
+                max-height: 400px;
+            }
+            QMenu::item {
+                padding: 6px 12px;
+                background-color: transparent;
+            }
+            QMenu::item:selected {
+                background-color: qlineargradient(x1:0, y1:1, x2:0, y2:0,
+                                            stop:0 #FDA239, stop:1 #F0851B);
+            }
+            QMenu::item:disabled {
+                background: transparent;
+                color: white;
+                padding: 2px 12px;
+                margin-top: 4px;
+                text-decoration: underline;
+            }
+            QMenu::separator {
+                height: 1px;
+                background: #292929;
+            }
+        """)
+
+        # Create options
+        self.setOptions(options)
+
+        self.button.setMenu(self.menu)
+        layout.addWidget(self.button)
+
+    def setOptions(self, options: List[DropdownGroup | str] = []):
+        self.menu.clear()
+
+        for i, group in enumerate(options):
+            if isinstance(group, DropdownGroup):
+                self.menu.addAction(QtGui.QAction(text=group.name, parent=self, disabled=True))
+                for j, option in enumerate(group.options):
+                    value = option["text"] if isinstance(option, dict) else option
+                    action = QtGui.QAction(value, self)
+                    action.triggered.connect(lambda _, i=i, j=j, option=option, value=value:
+                                             self.selectEvent.emit({
+                                                "group_index": i,
+                                                "item_index": j,
+                                                "id": option["id"] if isinstance(option, dict) else None,
+                                                "text": value
+                                            }))
+                    self.menu.addAction(action)
+            else:
+                # Provides compatibility for combo box
+                action = QtGui.QAction(group, self)
+                self.menu.addAction(action)
+                action.triggered.connect(lambda _, i=i, text=group: self._fallback_signal(i, text))
+            
+            self.menu.addSeparator()

@@ -57,7 +57,7 @@ sql_table = {
 
     "element_exists": "SELECT EXISTS (SELECT id FROM Elements WHERE id = ?)",
 
-    "get_assets": "SELECT name, value FROM Assets",
+    "get_assets": "SELECT id, name, value FROM Assets",
 
     "create_asset": "INSERT INTO Assets (name, value) VALUES (?, ?)",
 

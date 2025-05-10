@@ -51,8 +51,9 @@ class RenderingException(Exception):
 class TileWidget(EditorObject):  # MARK: Tile
     """A single tile element on the map.
     """
+    is_preview: bool
 
-    def __init__(self, *args, tile_id: int, background_image: bytes | None = None, rotation: int = 0):
+    def __init__(self, *args, tile_id: int, background_image: bytes | None = None, rotation: int = 0, is_preview: bool):
         """Constructor of the tile element to create a new tile to be rendered.
 
         Args:
@@ -61,6 +62,7 @@ class TileWidget(EditorObject):  # MARK: Tile
             rotation (int): The rotation of the element's contents. Defaults to 0.
         """
         super().__init__(*args, object_id=tile_id, type="element")
+        self.is_preview = is_preview
 
         # Render background or default color
         if background_image:
@@ -85,18 +87,15 @@ class TileWidget(EditorObject):  # MARK: Tile
             self.setBrush(QtGui.QBrush(QtGui.QColor("#8F9092")))
 
     def paint(self, painter, option, widget):
-        """Paint the tile and add outline when focused.
-        """
-        super().paint(painter, option, widget)
-
-        if self.hasFocus():
-            # Add outline when focused
-            self.setZValue(100)
-            pen = QtGui.QPen(QtGui.QColor("#F89B2E"), 2)
+        # Create tile border
+        if not self.is_preview:
+            pen = QtGui.QPen(QtGui.QColor("#000"), 1, QtCore.Qt.SolidLine)
             pen.setCosmetic(True)
             painter.setPen(pen)
             painter.setBrush(QtCore.Qt.BrushStyle.NoBrush)
             painter.drawRect(self.rect())
+
+        super().paint(painter, option, widget)
 
 
 class TextWidget(EditorObject):  # MARK: Text
@@ -105,14 +104,17 @@ class TextWidget(EditorObject):  # MARK: Text
     Attributes:
         text_label (GraphicsLabel): The graphics item that handles text rendering
         text (MapText): The text form information
+        is_preview (bool): Only render the contents to preview final map
     """
     text_label: GraphicsLabel
     text: MapText
+    is_preview: bool
 
-    def __init__(self, *args, text: MapText):
+    def __init__(self, *args, text: MapText, is_preview: bool):
         super().__init__(*args, object_id=text.id, type="text")
         self.setZValue(2)
         self.text = text
+        self.is_preview = is_preview
 
         # Create text element as label
         text_font = QtGui.QFont()
@@ -134,26 +136,16 @@ class TextWidget(EditorObject):  # MARK: Text
             self.boundingRect().center())
         self.setRotation(text.rotation)
 
-    # Paint the tile and add outline when focused
-
     def paint(self, painter, option, widget):
-        super().paint(painter, option, widget)
-
         # Create text border
-        pen = QtGui.QPen(QtGui.QColor("#000"), 2, QtCore.Qt.DashLine)
-        pen.setCosmetic(True)
-        painter.setPen(pen)
-        painter.setBrush(QtCore.Qt.BrushStyle.NoBrush)
-        painter.drawRect(self.rect())
-
-        if self.hasFocus():
-            # Add outline when focused
-            self.setZValue(100)
-            pen = QtGui.QPen(QtGui.QColor("#F89B2E"), 2)
+        if not self.is_preview:
+            pen = QtGui.QPen(QtGui.QColor("#000"), 2, QtCore.Qt.DashLine)
             pen.setCosmetic(True)
             painter.setPen(pen)
             painter.setBrush(QtCore.Qt.BrushStyle.NoBrush)
             painter.drawRect(self.rect())
+
+        super().paint(painter, option, widget)
 
 
 ObjectsList = List[Union[Element, MapText]]
@@ -196,6 +188,7 @@ class EditorGraphicsView(QtWidgets.QGraphicsView):  # MARK: Editor
     objectWidgets: List[Union[TileWidget, TextWidget]] = []
     focusedObjectWidget: TileWidget | TextWidget | None = None
     focusedObject: MapText | Element | None = None
+    is_preview: bool
 
     def __init__(self, is_preview: bool = False):
         """Constructor of the editor. Styles the graphics view and scales it.
@@ -204,6 +197,7 @@ class EditorGraphicsView(QtWidgets.QGraphicsView):  # MARK: Editor
             is_preview (bool, optional): If this graphics view should be preview only. Defaults to False.
         """
         super().__init__()
+        self.is_preview = is_preview
 
         # Styling & QT configs
         self.setScene(QtWidgets.QGraphicsScene(self))
@@ -235,6 +229,15 @@ class EditorGraphicsView(QtWidgets.QGraphicsView):  # MARK: Editor
             "color: white; background: rgba(0,0,0,0.5); padding: 2px; font-size: 12px;")
         self.coord_label.setAlignment(
             QtCore.Qt.AlignmentFlag.AlignLeft | QtCore.Qt.AlignmentFlag.AlignVCenter)
+        
+    def set_preview(self, is_preview: bool):
+        """Set the editor preview mode
+
+        Args:
+            is_preview (bool): Enable/disable preview mode
+        """
+        self.is_preview = is_preview
+        self.render(self.objects)
 
     def _getAdjustedCoordinate(self, coordinate: int | float):
         """Get the adjusted 1/256 coordinates.
@@ -294,8 +297,12 @@ class EditorGraphicsView(QtWidgets.QGraphicsView):  # MARK: Editor
         super().drawForeground(painter, rect)
 
     def drawBackground(self, painter: QtGui.QPainter, rect: QtCore.QRectF):
-        # Draw the editor background
+        # Draw the editor background (grid)
         super().drawBackground(painter, rect)
+
+        # Not rendered in preview
+        if self.is_preview:
+            return
 
         left = int(rect.left()) - (int(rect.left()) % self.element_size)
         top = int(rect.top()) - (int(rect.top()) % self.element_size)
@@ -409,7 +416,8 @@ class EditorGraphicsView(QtWidgets.QGraphicsView):  # MARK: Editor
                           self.element_size,  # h
                           tile_id=element.id,
                           background_image=element.background_image.data if element.background_image != None else None,
-                          rotation=element.rotation)
+                          rotation=element.rotation,
+                          is_preview=self.is_preview)
 
         tile.focusEvent.connect(lambda: self._setFocusedObjectWidget(tile))
         self.scene().addItem(tile)
@@ -421,26 +429,28 @@ class EditorGraphicsView(QtWidgets.QGraphicsView):  # MARK: Editor
             gave_focus = True
             self._setFocusedObjectWidget(tile)
 
-        # Create tile name
-        label = GraphicsLabel(
-            text=element.name, backgroundColor="#000", color="white")
-        label.setParentItem(tile)
-        label.setPos(
-            (element.x * self.element_size) + 10,
-            (element.y * self.element_size) + 10
-        )
+        # Only render labels when we are editing
+        if not self.is_preview:
+            # Create tile name
+            label = GraphicsLabel(
+                text=element.name, backgroundColor="#000", color="white")
+            label.setParentItem(tile)
+            label.setPos(
+                (element.x * self.element_size) + 10,
+                (element.y * self.element_size) + 10
+            )
 
-        # Create tile position
-        label = GraphicsLabel(
-            text=f"x: {element.x}, y: {element.y}", backgroundColor="#000", color="white")
-        label.setParentItem(tile)
-        label_rect = label.boundingRect()
-        label.setPos(
-            (element.x * self.element_size) +
-            self.element_size - label_rect.width() - 10,
-            (element.y * self.element_size) +
-            self.element_size - label_rect.height() - 10
-        )
+            # Create tile position
+            label = GraphicsLabel(
+                text=f"x: {element.x}, y: {element.y}", backgroundColor="#000", color="white")
+            label.setParentItem(tile)
+            label_rect = label.boundingRect()
+            label.setPos(
+                (element.x * self.element_size) +
+                self.element_size - label_rect.width() - 10,
+                (element.y * self.element_size) +
+                self.element_size - label_rect.height() - 10
+            )
 
         return gave_focus
 
@@ -450,7 +460,8 @@ class EditorGraphicsView(QtWidgets.QGraphicsView):  # MARK: Editor
                                  text.y,  # y
                                  1,
                                  1,
-                                 text=text)
+                                 text=text,
+                                 is_preview=self.is_preview)
 
         text_widget.focusEvent.connect(
             lambda: self._setFocusedObjectWidget(text_widget))

@@ -313,6 +313,17 @@ class Map:  # MARK: Map
         [[result]], _ = self._query(
             query=sql_table["asset_exists"], parameters=(asset_id,))
         return result == 1
+    
+    def get_assets(self) -> List[Asset]:
+        """Get an assets stored in the map.
+
+        Returns:
+            List[Asset]: The assets.
+        """
+        
+        assets, _ = self._query(
+            query=sql_table["get_assets"])
+        return list(Asset(*asset_raw) for asset_raw in assets)
 
     # Remove an asset
     def remove_asset(self, asset_id: int):

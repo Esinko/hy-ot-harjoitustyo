@@ -127,7 +127,7 @@ class SelectView(View):
         self.layout.addWidget(left_panel)
 
         # Preview in the right
-        editor_area = EditorGraphicsView(is_preview=True)
+        editor_area = EditorGraphicsView(is_preview=False)
         editor_area.setHorizontalScrollBarPolicy(
             QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         editor_area.setVerticalScrollBarPolicy(

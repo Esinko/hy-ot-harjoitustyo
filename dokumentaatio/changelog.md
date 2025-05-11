@@ -59,3 +59,7 @@
 - Korjattu bugi tekstin muokkauksien tallentumisessa
 - Lisätty versionumero karttoihin
 - Lisätty lisää default taustakuvia
+- Korjattu bugi kartan elementtien valitsemisessa
+- Siistitty koodikantaa
+- Korjattu bugi select-näkymän rename ja delete kohdistuksessa
+- Toteutettu uudelleen järjestelmäriippuvaisia komponentteja järjestelmäriippumattomiksi

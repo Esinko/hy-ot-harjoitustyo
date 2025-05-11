@@ -226,7 +226,9 @@ class Map:  # MARK: Map
                                                   element_editable["y"],
                                                   element_editable["width"],
                                                   element_editable["height"],
-                                                  new_asset_id))
+                                                  new_asset_id,
+                                                  element_editable["rotation"],
+                                                  element_editable["background_color"]))
         created_element = self.get_element(element_id)
         self._did_change()
         return created_element

@@ -47,7 +47,9 @@ class TestMap(unittest.TestCase):
             "background_image": {
                 "name": "test",
                 "data": list(image_data)
-            }
+            },
+            "rotation": 0,
+            "background_color": None
         }
         element = map.create_element(element_dict)
         elements = map.get_elements()
@@ -69,7 +71,10 @@ class TestMap(unittest.TestCase):
             "x": 0,
             "y": 0,
             "width": 1,
-            "height": 1
+            "height": 1,
+            "rotation": 0,
+            "background_color": None,
+            "background_image": None
         }
         element = map.create_element(element_dict)
         map.remove_element(element.id)

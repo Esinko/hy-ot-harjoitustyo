@@ -47,8 +47,10 @@ sql_table = {
             y,
             width,
             height,
-            background_image
-        ) VALUES (?, ?, ?, ?, ?, ?)
+            background_image,
+            rotation,
+            background_color
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     """,
 
     "edit_element": """

@@ -63,3 +63,4 @@
 - Siistitty koodikantaa
 - Korjattu bugi select-näkymän rename ja delete kohdistuksessa
 - Toteutettu uudelleen järjestelmäriippuvaisia komponentteja järjestelmäriippumattomiksi
+- Lisätty copy&paste ominaisuus editoriin

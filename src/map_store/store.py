@@ -128,6 +128,8 @@ class MapStore:  # MARK: MapStore
         Raises:
             InvalidPathException: The given path to export to is invalid.
         """
+        if str(Path(location)) == ".":
+            return
         try:
             target_location = Path(location)
         except TypeError as type_err:

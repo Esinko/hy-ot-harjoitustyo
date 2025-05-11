@@ -10,7 +10,9 @@ from map.types import Element, ElementEditable, Asset
 default_images = { # Default images in the image picker
     "Camp": abspath("./ui/images/Camp.jpg"),
     "Corner": abspath("./ui/images/Corner.jpg"),
+    "Straight": abspath("./ui/images/Straight.jpg"),
     "Prize Room": abspath("./ui/images/Prize_room.jpg"),
+    "3 Point Intersection": abspath("./ui/images/3-point-intersection.jpg"),
     "Straight Infinite Stairs": abspath("./ui/images/Straight_infinite_stairs.jpg")
 }
 

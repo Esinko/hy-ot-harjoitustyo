@@ -440,10 +440,11 @@ class EditorGraphicsView(QtWidgets.QGraphicsView):  # MARK: Editor
         # NOTE: This causes some stutter, why?
         clone = self.focusedObjectWidget
         was_focused = self.focusedObject
-        super().mousePressEvent(event)
         if was_focused is not None and event.button() == QtCore.Qt.LeftButton and isValid(clone):
             clone.focused = True
             self._setFocusedObjectWidget(was_focused)
+
+        return super().mousePressEvent(event)
 
     def _render_element_object(self, element: Element) -> bool:  # MARK: Render
         # Add grid elements to the map

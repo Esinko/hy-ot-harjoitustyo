@@ -147,16 +147,16 @@ class Map:  # MARK: Map
 
         # Check that meta contains required version
         # Some old map files don't have it
-        [[column_count]], _ = self._query(query=sql_table["get_meta_size"], limit=1)
+        [[column_count]], _ = self._query(
+            query=sql_table["get_meta_size"], limit=1)
         if not column_count or column_count < 3:
             raise MapOutdatedException(self.map_file.absolute())
-
 
         # Read the name of the map
         [meta], _ = self._query(query=sql_table["get_meta"], limit=1)
         if not meta:
             raise MapMetadataMalformedException(self.map_file.absolute())
-        
+
         # Detect outdated version
         if meta[0] < current_map_version:
             raise MapOutdatedException(self.map_file.absolute())
@@ -341,14 +341,14 @@ class Map:  # MARK: Map
         [[result]], _ = self._query(
             query=sql_table["asset_exists"], parameters=(asset_id,))
         return result == 1
-    
+
     def get_assets(self) -> List[Asset]:
         """Get an assets stored in the map.
 
         Returns:
             List[Asset]: The assets.
         """
-        
+
         assets, _ = self._query(
             query=sql_table["get_assets"])
         return list(Asset(*asset_raw) for asset_raw in assets)
@@ -469,4 +469,4 @@ class Map:  # MARK: Map
         if not self.text_exists(text_id):
             raise TextNotFoundException(text_id)
         self._execute(query=sql_table["remove_text"], parameters=(text_id,))
-        self._did_change() 
+        self._did_change()

@@ -351,18 +351,22 @@ class ColorInputWidget(InputGroupWidget):
         self.color_preview.setStyleSheet(
             f"background-color: {self.color.name()}; border: 1px solid #393939;")
 
+
 class ComplexOption(TypedDict):
     id: str | int | None
     text: str
+
 
 class SelectedAction(ComplexOption):
     item_index: int
     group_index: int
 
+
 @dataclass
 class DropdownGroup:
     name: str
     options: List[ComplexOption | str]
+
 
 class StandardDropdownWidget(QtWidgets.QWidget):
     """Dropdown styled to look like a button. Drop-in replacement for ComboBox.
@@ -460,22 +464,25 @@ class StandardDropdownWidget(QtWidgets.QWidget):
 
         for i, group in enumerate(options):
             if isinstance(group, DropdownGroup):
-                self.menu.addAction(QtGui.QAction(text=group.name, parent=self, disabled=True))
+                self.menu.addAction(QtGui.QAction(
+                    text=group.name, parent=self, disabled=True))
                 for j, option in enumerate(group.options):
-                    value = option["text"] if isinstance(option, dict) else option
+                    value = option["text"] if isinstance(
+                        option, dict) else option
                     action = QtGui.QAction(value, self)
                     action.triggered.connect(lambda _, i=i, j=j, option=option, value=value:
                                              self.selectEvent.emit({
-                                                "group_index": i,
-                                                "item_index": j,
-                                                "id": option["id"] if isinstance(option, dict) else None,
-                                                "text": value
-                                            }))
+                                                 "group_index": i,
+                                                 "item_index": j,
+                                                 "id": option["id"] if isinstance(option, dict) else None,
+                                                 "text": value
+                                             }))
                     self.menu.addAction(action)
             else:
                 # Provides compatibility for combo box
                 action = QtGui.QAction(group, self)
                 self.menu.addAction(action)
-                action.triggered.connect(lambda _, i=i, text=group: self._fallback_signal(i, text))
-            
+                action.triggered.connect(
+                    lambda _, i=i, text=group: self._fallback_signal(i, text))
+
             self.menu.addSeparator()

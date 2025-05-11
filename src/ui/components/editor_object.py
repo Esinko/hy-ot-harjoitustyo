@@ -54,7 +54,7 @@ class EditorObject(QtCore.QObject, QtWidgets.QGraphicsRectItem):
             painter.setPen(QtGui.QPen(QtGui.QColor("white"), 4))
             painter.drawEllipse(
                 center, self.edit_circle_radius, self.edit_circle_radius)
-            
+
             # Add outline
             self.setZValue(100)
             pen = QtGui.QPen(QtGui.QColor("#F89B2E"), 2)
@@ -111,7 +111,7 @@ class EditorObject(QtCore.QObject, QtWidgets.QGraphicsRectItem):
                 )
                 painter.drawPixmap(icon_rect, icon_pixmap)
                 painter.end()
-                
+
                 drag.setPixmap(pixmap)
                 drag.setHotSpot(QtCore.QPoint(16, 16))
                 drag.exec(QtCore.Qt.DropAction.CopyAction)
@@ -121,5 +121,5 @@ class EditorObject(QtCore.QObject, QtWidgets.QGraphicsRectItem):
                     QtWidgets.QGraphicsView.DragMode.ScrollHandDrag)
                 event.accept()
                 return
-        
+
         super().mousePressEvent(event)

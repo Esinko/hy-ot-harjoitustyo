@@ -48,7 +48,7 @@ class AddObjectButtonWidget(QtWidgets.QPushButton):
         )
         painter.drawPixmap(icon_rect, icon_pixmap)
         painter.end()
-        
+
         drag.setPixmap(pixmap)
         drag.setHotSpot(QtCore.QPoint(16, 16))
         drag.exec(QtCore.Qt.DropAction.CopyAction)

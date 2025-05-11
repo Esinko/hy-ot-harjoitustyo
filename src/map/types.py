@@ -158,7 +158,8 @@ class MapMetadataMalformedException(Exception):
         """
         super().__init__(
             f"Metadata of '{map_file}' is malformed. Cannot read map.")
-        
+
+
 class MapOutdatedException(Exception):
     """Exception to be raised when the map is too old.
     """

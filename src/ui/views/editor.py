@@ -92,7 +92,8 @@ class EditorView(View):
         # FIXME: Refactor of object handling will unify this with insert_element,
         #        but for now we must create a dummy text object and then edit it
         #        to add all attributes to it.
-        created_text = map.create_text("", "", text_to_insert["x"], text_to_insert["y"])
+        created_text = map.create_text(
+            "", "", text_to_insert["x"], text_to_insert["y"])
         text_to_insert["id"] = created_text.id
         map.edit_text(created_text.id, text_to_insert)
 
@@ -125,7 +126,8 @@ class EditorView(View):
         # Map icon
         map_icon_label = QtWidgets.QLabel()
         map_icon = QtGui.QPixmap(abspath("./ui/icons/map.svg"))
-        map_icon_label.setPixmap(map_icon.scaled(24, 24, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation))
+        map_icon_label.setPixmap(map_icon.scaled(
+            24, 24, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation))
         map_icon_label.setFixedSize(24, 24)
 
         # Map name on the left
@@ -166,7 +168,8 @@ class EditorView(View):
         toolbar_layout.setAlignment(QtCore.Qt.AlignmentFlag.AlignLeft)
 
         # View mode dropdown
-        view_mode_dropdown = StandardDropdownWidget(options=["Editor", "Viewer"])
+        view_mode_dropdown = StandardDropdownWidget(
+            options=["Editor", "Viewer"])
 
         # Add buttons
         add_element = AddElementButtonWidget()
@@ -184,7 +187,8 @@ class EditorView(View):
 
         # Actual editor area
         editor_area = EditorGraphicsView()
-        view_mode_dropdown.currentIndexChanged.connect(lambda index: editor_area.set_preview(index == 1))
+        view_mode_dropdown.currentIndexChanged.connect(
+            lambda index: editor_area.set_preview(index == 1))
         main_layout.addWidget(editor_area)
 
         # Element Properties side bar
@@ -225,7 +229,7 @@ class EditorView(View):
         )
         main_layout.addWidget(text_properties_sidebar)
 
-            # MARK: Editor events
+        # MARK: Editor events
         # Handle editor events
         editor_area.addElementEvent.connect(
             lambda event: self._create_element(map, event.x, event.y))
@@ -240,17 +244,19 @@ class EditorView(View):
         editor_area.pasteTextEvent.connect(
             lambda text: self._insert_text(map, text))
         editor_area.removeElementEvent.connect(
-            lambda element_id: map.remove_element(element_id) and element_properties_sidebar.setElement(None)
+            lambda element_id: map.remove_element(
+                element_id) and element_properties_sidebar.setElement(None)
         )
         editor_area.removeTextEvent.connect(
-            lambda text_id: map.remove_text(text_id) and text_properties_sidebar.setText(None)
+            lambda text_id: map.remove_text(
+                text_id) and text_properties_sidebar.setText(None)
         )
 
         # When elements change, this is ran
         def render_lambda():
             editor_area.render(concat(map.get_elements(),
                                       map.get_text_list()))
-            
+
         map.register_on_change(render_lambda)
 
         # Initial render

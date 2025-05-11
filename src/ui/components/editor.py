@@ -85,7 +85,8 @@ class TileWidget(EditorObject):  # MARK: Tile
             # Paint the background
             self.setBrush(QtGui.QBrush(rotated_pixmap))
         else:
-            self.setBrush(QtGui.QBrush(QtGui.QColor(background_color or "#8F9092")))
+            self.setBrush(QtGui.QBrush(
+                QtGui.QColor(background_color or "#8F9092")))
 
     def paint(self, painter, option, widget):
         # Create tile border
@@ -235,7 +236,7 @@ class EditorGraphicsView(QtWidgets.QGraphicsView):  # MARK: Editor
             "color: white; background: rgba(0,0,0,0.5); padding: 2px; font-size: 12px;")
         self.coord_label.setAlignment(
             QtCore.Qt.AlignmentFlag.AlignLeft | QtCore.Qt.AlignmentFlag.AlignVCenter)
-        
+
     def set_preview(self, is_preview: bool):
         """Set the editor preview mode
 

@@ -7,7 +7,7 @@ from ui.components.inputs import InputGroupWidget, TextInputWidget, ImageFileInp
 from ui.components.buttons import DeleteButtonWidget, StandardButtonWidget
 from map.types import Element, ElementEditable, Asset
 
-default_images = { # Default images in the image picker
+default_images = {  # Default images in the image picker
     "Camp": abspath("./ui/images/Camp.jpg"),
     "Corner": abspath("./ui/images/Corner.jpg"),
     "Straight": abspath("./ui/images/Straight.jpg"),
@@ -15,6 +15,7 @@ default_images = { # Default images in the image picker
     "3 Point Intersection": abspath("./ui/images/3-point-intersection.jpg"),
     "Straight Infinite Stairs": abspath("./ui/images/Straight_infinite_stairs.jpg")
 }
+
 
 class EditElementEvent:
     id: int
@@ -66,7 +67,8 @@ class ElementPropertiesWidget(EditorSidebar):
         self.rotation_dial.setDisabled(element is None)
         self.rotation_dial.setValue(
             element.rotation + 180 if element is not None else 180)
-        self.color_input.set_color(element.background_color if element else "#8F9092")
+        self.color_input.set_color(
+            element.background_color if element else "#8F9092")
         self._build_pick_background_menu()
 
         # Set target last to prevent emission of changed events
@@ -85,7 +87,7 @@ class ElementPropertiesWidget(EditorSidebar):
         for asset in self.available_assets:
             if asset.id == id:
                 return asset
-            
+
         return None
 
     def _edit_name(self):
@@ -110,15 +112,15 @@ class ElementPropertiesWidget(EditorSidebar):
             }
         self.editElementEvent.emit(EditElementEvent(
             self.target_element.id, element_editable))
-        
+
     def _pick_background_from_library(self, event: SelectedAction):
         # Triggered when default is selected
         element_editable = self.target_element.to_dict()
         element_editable["background_image"] = {
             "name": event["text"],
             "data": self._get_cached_asset(int(event["id"].removeprefix("a-"))).data
-                        if event["id"].startswith("a-") else
-                            list(Path(event["id"]).read_bytes())
+            if event["id"].startswith("a-") else
+            list(Path(event["id"]).read_bytes())
         }
         self.editElementEvent.emit(EditElementEvent(
             self.target_element.id, element_editable))
@@ -135,18 +137,18 @@ class ElementPropertiesWidget(EditorSidebar):
         element_editable["rotation"] = self.rotation_dial.value() - 180
         self.editElementEvent.emit(EditElementEvent(
             self.target_element.id, element_editable))
-        
+
     def _build_pick_background_menu(self):
         # Builds the dropdown menu
         # We need to re-run this to rebuild the list
         self.image_library_picker.setOptions([
             DropdownGroup(name="Defaults", options=(
-                { "text": image_name, "id": default_images[image_name] }
-                    for image_name in default_images.keys()
+                {"text": image_name, "id": default_images[image_name]}
+                for image_name in default_images.keys()
             )),
             DropdownGroup(name="Copy", options=(
-                { "text": asset.name, "id": f"a-{asset.id}" }
-                    for asset in self.available_assets
+                {"text": asset.name, "id": f"a-{asset.id}"}
+                for asset in self.available_assets
             ))
         ])
 
@@ -181,17 +183,20 @@ class ElementPropertiesWidget(EditorSidebar):
             self._edit_background_image)
         background_row.addWidget(self.background_input)
         self.delete_background_button = DeleteButtonWidget(box_size=24)
-        self.delete_background_button.clicked.connect(self._edit_background_image)
+        self.delete_background_button.clicked.connect(
+            self._edit_background_image)
         background_row.addWidget(self.delete_background_button)
         self.sidebar_layout.addWidget(element_background_label)
         self.sidebar_layout.addSpacerItem(QtWidgets.QSpacerItem(0, 4))
         self.sidebar_layout.addWidget(background_row)
         self.sidebar_layout.addSpacerItem(QtWidgets.QSpacerItem(0, 4))
-        
+
         # Default image picker (see function)
-        self.image_library_picker = StandardDropdownWidget(text="Select Default/Copy")
+        self.image_library_picker = StandardDropdownWidget(
+            text="Select Default/Copy")
         self._build_pick_background_menu()
-        self.image_library_picker.selectEvent.connect(lambda event: self._pick_background_from_library(event))
+        self.image_library_picker.selectEvent.connect(
+            lambda event: self._pick_background_from_library(event))
         self.sidebar_layout.addWidget(self.image_library_picker)
         self.sidebar_layout.addSpacerItem(QtWidgets.QSpacerItem(0, 8))
 

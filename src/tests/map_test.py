@@ -8,6 +8,7 @@ testdata_path_prefix = "./src/tests/testdata-"
 schema_path = "./src/map_store/schema.sql"
 init_path = "./src/map_store/init.sql"
 
+
 class TestMapStore(unittest.TestCase):
     def setUp(self):
         self.test_path = testdata_path_prefix + str(uuid4())

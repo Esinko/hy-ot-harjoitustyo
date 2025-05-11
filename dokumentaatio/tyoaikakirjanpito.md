@@ -14,5 +14,6 @@
 | 29.4.2025 | 5 | docstring dokumentaatio, kartanhallinan refaktorointi |
 | 8.5.2025 | 2 | toteutettu custom dropdown komponentti |
 | 10.5.2025 | 7 | kopio kuva ja sisällytetyt kuvat -ominaisuus, viewer-tila |
+| 11.5.2025 | 8 | lukuisia virheenkorjauksia, copy & paste ja sovelluksen viimeistely |
 
-**SUMMA:** `57` h
+**SUMMA:** `65` h

@@ -381,7 +381,8 @@ class EditorGraphicsView(QtWidgets.QGraphicsView):  # MARK: Editor
                 self.moveElementEvent.emit(
                     MoveElementEvent(target_tile, tile_x, tile_y))
                 event.accept()
-                self.focusedObjectWidget.setFocus(QtCore.Qt.FocusReason.NoFocusReason)
+                self.focusedObjectWidget.setFocus(
+                    QtCore.Qt.FocusReason.NoFocusReason)
             elif event_mime_text.startswith("BDM; move_text "):
                 target_text = int(event_mime_text.split(" ")[2])
 
@@ -399,7 +400,8 @@ class EditorGraphicsView(QtWidgets.QGraphicsView):  # MARK: Editor
                 self.moveTextEvent.emit(MoveTextEvent(
                     target_text, centered_x, centered_y))
                 event.accept()
-                self.focusedObjectWidget.setFocus(QtCore.Qt.FocusReason.NoFocusReason)
+                self.focusedObjectWidget.setFocus(
+                    QtCore.Qt.FocusReason.NoFocusReason)
             elif event_mime_text == "BDM; new_text":
                 self.addTextEvent.emit(AddTextEvent(
                     scene_pos.x(), scene_pos.y()))
@@ -427,7 +429,7 @@ class EditorGraphicsView(QtWidgets.QGraphicsView):  # MARK: Editor
                 raise RenderingException(
                     "ERROR: Object to focus is not in objects cache! Cannot focus.")
             self.focusObjectEvent.emit(FocusEvent(object.id, object.type))
-    
+
     def mousePressEvent(self, event: QtGui.QMouseEvent):
         # Maintain focus when using left click
         # NOTE: This causes some stutter, why?
@@ -450,7 +452,8 @@ class EditorGraphicsView(QtWidgets.QGraphicsView):  # MARK: Editor
                           rotation=element.rotation,
                           is_preview=self.is_preview)
 
-        tile.focusEvent.connect(lambda give_focus: self._setFocusedObjectWidget(tile if give_focus else None))
+        tile.focusEvent.connect(
+            lambda give_focus: self._setFocusedObjectWidget(tile if give_focus else None))
         self.scene().addItem(tile)
         self.objectWidgets.append(tile)
 

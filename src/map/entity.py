@@ -17,7 +17,7 @@ from map.types import (
 )
 
 
-current_map_version = 2
+CURRENT_MAP_VERSION = 2
 
 
 class Map:  # MARK: Map
@@ -158,7 +158,7 @@ class Map:  # MARK: Map
             raise MapMetadataMalformedException(self.map_file.absolute())
 
         # Detect outdated version
-        if meta[0] < current_map_version:
+        if meta[0] < CURRENT_MAP_VERSION:
             raise MapOutdatedException(self.map_file.absolute())
 
         self.name = meta[1]
@@ -280,6 +280,12 @@ class Map:  # MARK: Map
                 element_editable["background_image"]["data"]))
 
         # Perform edit
+        background_value = None
+        if new_asset:
+            background_value = new_asset.id
+        elif "id" in element_editable["background_image"]:
+            background_value = element_editable["background_image"]["id"]
+
         self._execute(query=sql_table["edit_element"],
                       parameters=(element_editable["name"],
                                   element_editable["x"],
@@ -287,11 +293,10 @@ class Map:  # MARK: Map
                                   element_editable["width"],
                                   element_editable["height"],
                                   element_editable["rotation"],
-                                  None if not element_editable["background_image"] and not new_asset else (
-                                      element_editable["background_image"]["id"] if not new_asset else new_asset.id
-                      ),
-            element_editable["background_color"],
-            element_id))
+                                  background_value,
+                                  element_editable["background_color"],
+                                  element_id
+                                  ))
         self._did_change()
         # NOTE: Id can be changed, technically
         return self.get_element(element_editable["id"])

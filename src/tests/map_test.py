@@ -59,7 +59,8 @@ class TestMap(unittest.TestCase):
         self.assertEqual(elements[0].width, 1)
         self.assertEqual(len(elements), 1)
         self.assertEqual(elements[0].background_image.data, image_data)
-        self.assertEqual(elements[0].background_image.name, element_dict["background_image"]["name"])
+        self.assertEqual(elements[0].background_image.name,
+                         element_dict["background_image"]["name"])
 
     def test_remove_element(self):
         map = self.store.create_map("secret-name", "test-map")

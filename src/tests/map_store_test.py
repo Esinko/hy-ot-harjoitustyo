@@ -50,7 +50,8 @@ class TestMapStore(unittest.TestCase):
     def test_export(self):
         map = self.store.create_map("secret-name", "test-map")
         self.store.export(map, join(self.test_path, "./secret-name.dmap"))
-        self.assertEqual(Path(join(self.test_path, "./secret-name.dmap")).exists(), True)
+        self.assertEqual(
+            Path(join(self.test_path, "./secret-name.dmap")).exists(), True)
 
     def test_import(self):
         print([map.name for map in self.store.list()])
@@ -76,4 +77,3 @@ class TestMapStore(unittest.TestCase):
         list[0].delete()
         list = self.store.list()
         self.assertEqual(len(list), 0)
-

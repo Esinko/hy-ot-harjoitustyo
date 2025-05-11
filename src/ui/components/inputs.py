@@ -370,7 +370,7 @@ class DropdownGroup:
 
 class StandardDropdownWidget(QtWidgets.QWidget):
     """Dropdown styled to look like a button. Drop-in replacement for ComboBox."""
-    
+
     selectEvent = QtCore.Signal(ComplexOption)
     currentIndexChanged = QtCore.Signal(int)
 
@@ -386,7 +386,7 @@ class StandardDropdownWidget(QtWidgets.QWidget):
         super().__init__()
         layout = QtWidgets.QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
-        
+
         # Create menu button
         self.button = QtWidgets.QToolButton(self)
         self.button.setPopupMode(QtWidgets.QToolButton.InstantPopup)
@@ -422,7 +422,7 @@ class StandardDropdownWidget(QtWidgets.QWidget):
             self.button.setText(options[0])
         else:
             self.button.setText(text or "")
-        
+
         # Create menu
         self.menu = QtWidgets.QMenu(self)
         self.menu.setStyleSheet("""
@@ -432,7 +432,7 @@ class StandardDropdownWidget(QtWidgets.QWidget):
                 color: white;
             }
         """)
-        
+
         # Create item container
         self._scroll_container = QtWidgets.QWidget()
         self._scroll_container.setStyleSheet("""
@@ -442,33 +442,35 @@ class StandardDropdownWidget(QtWidgets.QWidget):
         self._scroll_layout = QtWidgets.QVBoxLayout(self._scroll_container)
         self._scroll_layout.setContentsMargins(0, 0, 0, 0)
         self._scroll_layout.setSpacing(0)
-        
+
         # Create scroll area
         self._scroll_area = QtWidgets.QScrollArea()
         self._scroll_area.setWidget(self._scroll_container)
         self._scroll_area.setWidgetResizable(True)
-        self._scroll_area.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
-        self._scroll_area.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
+        self._scroll_area.setHorizontalScrollBarPolicy(
+            QtCore.Qt.ScrollBarAlwaysOff)
+        self._scroll_area.setVerticalScrollBarPolicy(
+            QtCore.Qt.ScrollBarAsNeeded)
         self._scroll_area.setFrameShape(QtWidgets.QFrame.NoFrame)
         self._scroll_area.setMaximumHeight(200)
-        
+
         # Add scroll area to menu
         scroll_action = QtWidgets.QWidgetAction(self.menu)
         scroll_action.setDefaultWidget(self._scroll_area)
         self.menu.addAction(scroll_action)
         self.button.setMenu(self.menu)
         layout.addWidget(self.button)
-        
+
         # populate initial options
         self.setOptions(options)
-    
+
     def setOptions(self, options: List[DropdownGroup | str] = []):
         # Remove old buttons
         while self._scroll_layout.count():
             item = self._scroll_layout.takeAt(0)
             if w := item.widget():
                 w.deleteLater()
-        
+
         action_button_style = """
             QPushButton, QLabel {
                 text-align: left;
@@ -482,7 +484,7 @@ class StandardDropdownWidget(QtWidgets.QWidget):
                                             stop:0 #FDA239, stop:1 #F0851B);
             }
         """
-        
+
         # Build items
         for i, group in enumerate(options):
             if hasattr(group, "name") and hasattr(group, "options"):
@@ -496,7 +498,7 @@ class StandardDropdownWidget(QtWidgets.QWidget):
                     font-weight: bold;
                 """)
                 self._scroll_layout.addWidget(header)
-                
+
                 # Create buttons for this group
                 for j, opt in enumerate(group.options):
                     txt = opt["text"] if isinstance(opt, dict) else opt
@@ -516,7 +518,7 @@ class StandardDropdownWidget(QtWidgets.QWidget):
                         )
                     )
                     self._scroll_layout.addWidget(action_button)
-                    
+
                     # Button border
                     if j != len(group.options) - 1:
                         line = QtWidgets.QFrame()
@@ -538,7 +540,7 @@ class StandardDropdownWidget(QtWidgets.QWidget):
                     )
                 )
                 self._scroll_layout.addWidget(action_button)
-            
+
             # Group separator
             if i != len(options) - 1:
                 line = QtWidgets.QFrame()

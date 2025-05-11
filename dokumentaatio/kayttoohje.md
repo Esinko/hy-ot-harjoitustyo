@@ -1,10 +1,19 @@
 # Käyttöohje
 Tämän käyttöohjeen avulla saat sovelluksen käyntiin ja opit sen perustoiminnallisuuksien käytön, kuten kartan luonnin ja sen sisällön muokkaamisen.
 
+### Konfigurointi
+Sovellus ei vaadi erillistä konfiguraatiota.
+
 ### Sovelluksen käynnistäminen
+Ennen sovelluksen käynnistämistä, asenna riippuvuudet:
+
+```bash
+poetry install
+```
+
 Käynnistä sovellus komennolla:
 
-```py
+```bash
 poetry run invoke start
 ```
 
@@ -64,3 +73,20 @@ Voit myös huomata, että valitsemamme ruutu on nyt korostettu oranssilla reunuk
 
 Kun olet valmis ruudun muokkaamisen kanssa, voit painaa `Esc`-näppäintä ja sulkea muokkaustilan.
 
+### Karttaelementin kopiointi ja liittäminen
+Karttaelementtejä voi kopioida ja liittää editoriin `CTRL+C` ja `CTRL+V` -näppäinkomennolla.
+
+Huomaathan, että kopioidaksesi elementin kartalta, sen tulee olla valittuna!
+
+Kun liität kopioidun elementin, se ilmestyy alkuperäisen elementin oikealle puolelle.
+
+### Karttanäkymän tilat
+Karttanäkymässä on kaksi eri katselutilaa. Katsetulaa saa vaihdettua yläpalkin oikeasta reunasta seuraavalla monivalinnalla:
+![view_mode](./kayttoohje-kuvat/view_mode.png)
+
+Klikkaamalla monivalintaa voit valita kahdesta eri katselutilasta:
+![view_options](./kayttoohje-kuvat/view_options.png)
+
+**Katselutilat**
+- `Editor` on editorin normaalinäkymä.
+- `Viewer` on minimaalinen näkymä, jossa on mielekkäämpää katsella karttaa.

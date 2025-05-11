@@ -37,8 +37,19 @@ Näkymistä voi olla esillä vain yksi kerrallaan.
 
 Käyttöliittymä on erillinen sovelluslogiikasta ja vain kutsuu `MapStore`- tai `Map`-luokkien metodeja.
 
+## Sovelluslogiikka
+Sovelluksen loogisen tietomallin keskiössä ovat luokat `MapStore` ja `Map`. Päätoiminnallisuuden tarjoaa `MapStore`-luokan ainoa olio. Luokka tarjoaa kaikille sovelluksen osille metodit `Map`-olioiden muodostamiseen levyllä olevien `.dmap`-tiedostojen pohjalta.
+
+`MapStore`-luokka tarjoaa keskeisiä metodeja, kuten:
+- `list()`, joka listaa karttatiedostot ja muodostaa kaikille `Map`-oliot.
+- `create_map(name: str, filename: str)`, jonka avulla voi luoda uuden kartan.
+- jne.
+
+Tämä pakkauskaavio kuvastaa sovelluksen luokkien hierarkiaa ja suhdetta toisiinsa.
+![Pakkauskaavio](./arkkitehtuuri-kuvat/alustava-pakkauskaavio.png)
+
 ## Tietojen pysyväistallennus
-Sovelluksen luokat `Map` ja `MapStore` hulehtivat tietojen pysyväistallennuksesta. `MapStore`-luokka käyttää tiedostojärjestelmää karttatiedostojen löytämiseen ja luontiin. `Map`-luokka vastaa tiedoston sisällön muokkaamisesta, uudelleennimeämisestä ja poistamisesta mikäli tarpeen.
+Sovelluksen luokat `Map` ja `MapStore` huolehtivat tietojen pysyväistallennuksesta. `MapStore`-luokka käyttää tiedostojärjestelmää karttatiedostojen löytämiseen ja luontiin. `Map`-luokka vastaa tiedoston sisällön muokkaamisesta, uudelleennimeämisestä ja poistamisesta mikäli tarpeen.
 
 Luokkien valmistelussa on pyritty noudattamaan [Repository](https://en.wikipedia.org/wiki/Data_access_object)-mallia, joten niiden toteutukset voidaan tarvittaessa korvata. Ne tarjoavat korkean tason abstraktion tiedostojärjestelmän käyttöön ja karttojen sisällön muokkaamiseen.
 
@@ -127,10 +138,6 @@ sequenceDiagram
 **Muu toiminnallisuus**
 Lähtökohtaisesti kaikki muu toiminnallisuus seuraa vastaavaa mallia. Käyttäjä tekee jotain, joka johtaa tapahtuman käsittelyyn käyttöliittymän toimesta, joka kutsuu MapStore ja Map luokkia tapahtuman edellytyksien mukaisesti.
 
-## Looginen pakkauskaavio
-Tämä pakkauskaavio kuvastaa sovelluksen luokkien hierarkiaa ja suhdetta toisiinsa.
-![Pakkauskaavio](./arkkitehtuuri-kuvat/alustava-pakkauskaavio.png)
-
 ## Sekvenssikaavio: kartan luonti, elementin lisäys ja kartan sulku
 Tämä sekvenssikaavio kuvastaa sovelluksen ohjelmallista toimintaa.
 ```mermaid
@@ -160,11 +167,9 @@ sequenceDiagram
 
     %% Close
     main->>created_map: map.close()
-    created_map-->>main: None
-
 ```
 
 ## Puutteet
 Tällä hetkellä kartan objektien käsittely on koodissa jaettu erikseen Elements ja MapText osiin, joita käsitellään erikseen. Mielekkäämpää olisi käsitellä yhtä suurta MapObject-tyyppiä, joka vähentäisi koodissa toistoa.
 
-Arkkitehtuurillisia poikkeamia on käyttöliittymän MapStore- ja Map-luokkien käsittelyssä. Tavoitteena oli rajata näkymille pääsy vain Map-luokkaan, mutta MapStore on tietyissä tilanteissa tarpeellinen. Käyttöliittymän rakenteen yksinkertaistaminen voisi poistaa nämä edellytykset.
+Arkkitehtuurillisia poikkeamia on käyttöliittymän MapStore- ja Map-luokkien käsittelyssä. Tavoitteena oli rajata näkymille pääsy vain Map-luokkaan, mutta MapStore on tietyissä tilanteissa tarpeellinen. Käyttöliittymän rakenteen yksinkertaistaminen voisi poistaa nämä edellytykset. Lisäksi kartan poisto tapahtuu Map-luokan kautta, sillä tietokantayhteyden sulkeminen on sen kauttaa mielekkäämpää.

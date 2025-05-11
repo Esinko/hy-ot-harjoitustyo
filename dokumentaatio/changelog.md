@@ -52,3 +52,10 @@
 - Lisätty mahdollisuus kopioida toisen ruudun kuva toiseen ruutuun
 - Lisätty disabled-tila poista-napeille, kun ne eivät ole käytössä
 - Lisätty mahdollisuus valita tausta ruuduille sisällytetyistä kuvista
+
+## Viikko 7 (11.5.2025)
+- Lisätty mahdollisuus valita taustaväri ruuduille
+- Korjattu virheelliset ikonit raahaus-tapahtumissa
+- Korjattu bugi tekstin muokkauksien tallentumisessa
+- Lisätty versionumero karttoihin
+- Lisätty lisää default taustakuvia

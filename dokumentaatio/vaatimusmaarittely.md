@@ -6,26 +6,20 @@ Sovelluksen avulla voi luoda, tallentaa ja muokata grid-järjestelmää hyödynt
 ## Käyttäjät
 Sovelluksessa ei ole erilaisia käyttäjätyyppejä.
 
-## Perusversion Suunnitellut Toiminnallisuudet
-- `tehty` Tiedostojen hallinta
-    - `tehty` Käyttäjä voi luoda uuden kartan ja asettaa sille nimen
-    - `tehty` Käyttäjä voi poistaa kartan
-    - `tehty` Käyttäjä voi nimetä uudelleen kartan
-    - `tehty` Käyttäjä voi viedä kartan valitsemaansa sijaintiin
-    - `tehty` Käyttäjä voi tuoda kartan valitsemastaan sijainnista
+## Perusversion tarjoamat ominaisuudet
+- Tiedostojen hallinta
+    - Käyttäjä voi luoda uuden kartan ja asettaa sille nimen
+    - Käyttäjä voi poistaa kartan
+    - Käyttäjä voi nimetä uudelleen kartan
+    - Käyttäjä voi viedä kartan valitsemaansa sijaintiin
+    - Käyttäjä voi tuoda kartan valitsemastaan sijainnista
 - Muokkaaminen ja luonti (editori)
-    - `tehty` Käyttäjä voi muokata kartan elementtien väriä ja taustakuvaa
-    - `tehty` Käyttäjä voi lisätä kartalle elementtejä (neliö)
-    - `tehty` Käyttäjä voi lisätä karttalle tekstiä
+    - Käyttäjä voi muokata kartan elementtien väriä ja taustakuvaa
+    - Käyttäjä voi lisätä kartalle neliöitä ja tekstiä
     - Käyttäjä voi määrittää muotojen ja merkintöjen sijainnin ja koon
-        - `tehty` Neliöiden sijainti
-        - `tehty` Tekstin koko ja sijainti
-    - Käyttäjä voi poistaa elementtejä, muotoja ja muita merkintöjä
-        - `tehty` Neliöt
-        - `tehty` Tekstit
-    - Käyttäjä näkee kaikki muodot ja merkinnät listauksesta editorissa ja voi valita ne muokattaviksi listalta
-    - Käyttäjä voi peruuttaa tekemänsä muutokset
+    - Käyttäjä voi poistaa muotoja ja muita merkintöjä
     - Editorissa on valmiita esimerkkitaustoja kartan elementeille
+    - Käyttäjä voi kopioida ja liittää muotoja editorissa
     
 ## Käyttöliittymäluonnoksia
 Kun sovellus avataan, käyttäjä voi valita aikaisemman, tuoda, viedä tai luoda uuden kartan:
@@ -35,9 +29,7 @@ Kartan muokkausnäkymän idea:
 ![editori-idea](./vaatimusmaarittely-kuvat/editori-luonnos.png)
 
 ## Jatkokehitysiedoita
-- Katselunäkymä
-    - Käyttäjä voi avata katselunäkymän, jossa näkyy vain kartta ja sen sisältö
-    - Katselunäkymän voi avata toiseen ikkunaan ja editorin toiseen
+- Katselunäkymän voi avata toiseen ikkunaan ja editorin toiseen
 - Käyttäjä voi asettaa kartalle pikkukuvan
 - Automaattinen karttojen varmuuskopiointi virheiden varalta
 - Käyttäjä voi valita kartassa olevan tekstin fontin
@@ -45,3 +37,6 @@ Kartan muokkausnäkymän idea:
 - Ohjelmisto pakkaa kartat tallentaessaan
 - Tallenna kartat Google-Drive App-kansioon
 - Kartalle voi lisätä pelinappuloita
+- Undo/redo -ominaisuus editoriin
+- Group select -ominaisuus editoriin
+- Objektilistaus

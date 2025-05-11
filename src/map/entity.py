@@ -274,7 +274,7 @@ class Map:  # MARK: Map
 
         # Create new asset if required
         new_asset = None
-        if (element_editable["background_image"] is not None and
+        if (element_editable["background_image"] and
                 "id" not in element_editable["background_image"]):
             new_asset = self.create_asset(element_editable["background_image"]["name"], bytes(
                 element_editable["background_image"]["data"]))
@@ -283,7 +283,7 @@ class Map:  # MARK: Map
         background_value = None
         if new_asset:
             background_value = new_asset.id
-        elif "id" in element_editable["background_image"]:
+        elif element_editable["background_image"] and "id" in element_editable["background_image"]:
             background_value = element_editable["background_image"]["id"]
 
         self._execute(query=sql_table["edit_element"],

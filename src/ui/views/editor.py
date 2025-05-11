@@ -210,18 +210,18 @@ class EditorView(View):
 
         # Text Properties side bar
         text_properties_sidebar = TextPropertiesWidget()
-        text_properties_sidebar.editTextEvent.connect(
-            lambda event: map.edit_text(event.id, event.text_editable)
-        )
-        text_properties_sidebar.removeTextEvent.connect(
-            lambda event: map.remove_text(event.id)
-        )
         editor_area.focusObjectEvent.connect(
             lambda event: (
                 text_properties_sidebar.setText(map.get_text(event.id))
                 if event.id != None and event.type == "text" else
                 text_properties_sidebar.setText(None)
             )
+        )
+        text_properties_sidebar.editTextEvent.connect(
+            lambda event: map.edit_text(event.id, event.text_editable)
+        )
+        text_properties_sidebar.removeTextEvent.connect(
+            lambda event: map.remove_text(event.id)
         )
         main_layout.addWidget(text_properties_sidebar)
 

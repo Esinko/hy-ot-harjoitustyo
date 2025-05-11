@@ -33,10 +33,6 @@ class TextPropertiesWidget(EditorSidebar):
     color_input: ColorInputWidget
 
     def setText(self, text: MapText | None):
-        # This fixes some reflow issues
-        if self.target_text is not None and text is not None and self.target_text.id == text.id:
-            return
-
         # Disable fields
         self.target_text = None
 

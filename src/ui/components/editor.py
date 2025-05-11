@@ -386,8 +386,6 @@ class EditorGraphicsView(QtWidgets.QGraphicsView):  # MARK: Editor
                 self.moveElementEvent.emit(
                     MoveElementEvent(target_tile, tile_x, tile_y))
                 event.accept()
-                self.focusedObjectWidget.setFocus(
-                    QtCore.Qt.FocusReason.NoFocusReason)
             elif event_mime_text.startswith("BDM; move_text "):
                 target_text = int(event_mime_text.split(" ")[2])
 
@@ -405,8 +403,6 @@ class EditorGraphicsView(QtWidgets.QGraphicsView):  # MARK: Editor
                 self.moveTextEvent.emit(MoveTextEvent(
                     target_text, centered_x, centered_y))
                 event.accept()
-                self.focusedObjectWidget.setFocus(
-                    QtCore.Qt.FocusReason.NoFocusReason)
             elif event_mime_text == "BDM; new_text":
                 self.addTextEvent.emit(AddTextEvent(
                     scene_pos.x(), scene_pos.y()))

@@ -1,1 +1,1 @@
-INSERT INTO Meta (id, name) VALUES (1, "Unnamed Map")
+INSERT INTO Meta (id, name, version) VALUES (1, "Unnamed Map", 2)

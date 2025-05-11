@@ -54,7 +54,7 @@ class TileWidget(EditorObject):  # MARK: Tile
     """
     is_preview: bool
 
-    def __init__(self, *args, tile_id: int, background_image: bytes | None = None, rotation: int = 0, is_preview: bool):
+    def __init__(self, *args, tile_id: int, background_image: bytes | None = None, background_color: str | None = None, rotation: int = 0, is_preview: bool):
         """Constructor of the tile element to create a new tile to be rendered.
 
         Args:
@@ -85,7 +85,7 @@ class TileWidget(EditorObject):  # MARK: Tile
             # Paint the background
             self.setBrush(QtGui.QBrush(rotated_pixmap))
         else:
-            self.setBrush(QtGui.QBrush(QtGui.QColor("#8F9092")))
+            self.setBrush(QtGui.QBrush(QtGui.QColor(background_color or "#8F9092")))
 
     def paint(self, painter, option, widget):
         # Create tile border
@@ -187,6 +187,8 @@ class EditorGraphicsView(QtWidgets.QGraphicsView):  # MARK: Editor
     pasteElementEvent = QtCore.Signal(Element)
     pasteTextEvent = QtCore.Signal(MapText)
     focusObjectEvent = QtCore.Signal(FocusEvent)
+    removeElementEvent = QtCore.Signal(int)
+    removeTextEvent = QtCore.Signal(int)
     objects: ObjectsList = []
     objectWidgets: List[Union[TileWidget, TextWidget]] = []
     focusedObjectWidget: TileWidget | TextWidget | None = None
@@ -302,6 +304,13 @@ class EditorGraphicsView(QtWidgets.QGraphicsView):  # MARK: Editor
                 self.pasteElementEvent.emit(self.clipboard)
             else:
                 print("ERROR: Cannot copy unsupported object!")
+        elif event.key() == QtCore.Qt.Key_Delete and self.focusedObject:
+            if isinstance(self.focusedObject, MapText):
+                self.removeTextEvent.emit(self.focusedObject.id)
+            elif isinstance(self.focusedObject, Element):
+                self.removeElementEvent.emit(self.focusedObject.id)
+            else:
+                print("ERROR: Cannot delete unsupported object!")
         else:
             super().keyPressEvent(event)
 
@@ -434,6 +443,7 @@ class EditorGraphicsView(QtWidgets.QGraphicsView):  # MARK: Editor
                           self.element_size,  # h
                           tile_id=element.id,
                           background_image=element.background_image.data if element.background_image != None else None,
+                          background_color=element.background_color,
                           rotation=element.rotation,
                           is_preview=self.is_preview)
 

@@ -1,7 +1,8 @@
 -- Map metadata
 CREATE TABLE Meta (
     id INTEGER PRIMARY KEY,
-    name TEXT NOT NULL
+    name TEXT NOT NULL,
+    version INT NOT NULL
 );
 
 -- Assets

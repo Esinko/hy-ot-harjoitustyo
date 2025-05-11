@@ -1,6 +1,8 @@
 # All SQL commands for maps
 sql_table = {
-    "get_name": "SELECT name FROM Meta WHERE id = 1",
+    "get_meta": "SELECT version, name FROM Meta WHERE id = 1",
+
+    "get_meta_size": "SELECT COUNT(*) FROM pragma_table_info('Meta')",
 
     "set_name": "UPDATE Meta SET name = ? WHERE id = 1",
 

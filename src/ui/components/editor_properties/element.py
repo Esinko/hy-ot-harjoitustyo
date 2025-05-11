@@ -3,7 +3,7 @@ from os.path import abspath
 from pathlib import Path
 from typing import List
 from ui.components.editor_sidebar import EditorSidebar
-from ui.components.inputs import InputGroupWidget, TextInputWidget, ImageFileInputWidget, DialInputWidget, StandardDropdownWidget, DropdownGroup, SelectedAction
+from ui.components.inputs import InputGroupWidget, TextInputWidget, ImageFileInputWidget, DialInputWidget, StandardDropdownWidget, DropdownGroup, SelectedAction, ColorInputWidget
 from ui.components.buttons import DeleteButtonWidget, StandardButtonWidget
 from map.types import Element, ElementEditable, Asset
 
@@ -41,6 +41,7 @@ class ElementPropertiesWidget(EditorSidebar):
     rotation_dial: DialInputWidget
     image_library_picker: StandardDropdownWidget
     available_assets: List[Asset] = []
+    color_input: ColorInputWidget
 
     def setElement(self, element: Element | None):
         # Disable fields
@@ -63,6 +64,7 @@ class ElementPropertiesWidget(EditorSidebar):
         self.rotation_dial.setDisabled(element is None)
         self.rotation_dial.setValue(
             element.rotation + 180 if element is not None else 180)
+        self.color_input.set_color(element.background_color if element else "#8F9092")
         self._build_pick_background_menu()
 
         # Set target last to prevent emission of changed events
@@ -146,6 +148,14 @@ class ElementPropertiesWidget(EditorSidebar):
             ))
         ])
 
+    def _edit_color(self):
+        if not self.target_element:
+            return
+        self.target_element.background_color = self.color_input.get_color()
+        element_editable = self.target_element.to_dict()
+        self.editElementEvent.emit(EditElementEvent(
+            self.target_element.id, element_editable))
+
     def __init__(self, parent=None):
         super().__init__(parent=parent)
         self.hide()
@@ -190,6 +200,16 @@ class ElementPropertiesWidget(EditorSidebar):
         self.rotation_dial = DialInputWidget()
         self.rotation_dial.valueChanged.connect(self._edit_rotation)
         self.sidebar_layout.addWidget(self.rotation_dial)
+        self.sidebar_layout.addSpacerItem(QtWidgets.QSpacerItem(0, 8))
+
+        # Element color
+        color_label = QtWidgets.QLabel("Tile Color:")
+        self.color_input = ColorInputWidget()
+        self.color_input.color_changed.connect(self._edit_color)
+        self.sidebar_layout.addWidget(color_label)
+        self.sidebar_layout.addSpacerItem(QtWidgets.QSpacerItem(0, 4))
+        self.sidebar_layout.addWidget(self.color_input)
+        self.sidebar_layout.addSpacerItem(QtWidgets.QSpacerItem(0, 8))
 
         # Delete element button
         self.delete_button = StandardButtonWidget("Delete Element")

@@ -187,21 +187,6 @@ class EditorView(View):
         view_mode_dropdown.currentIndexChanged.connect(lambda index: editor_area.set_preview(index == 1))
         main_layout.addWidget(editor_area)
 
-        # MARK: Editor events
-        # Handle editor events
-        editor_area.addElementEvent.connect(
-            lambda event: self._create_element(map, event.x, event.y))
-        editor_area.moveElementEvent.connect(
-            lambda event: self._move_element(map, event.id, event.x, event.y))
-        editor_area.addTextEvent.connect(
-            lambda event: self._create_text(map, event.x, event.y))
-        editor_area.moveTextEvent.connect(
-            lambda event: self._move_text(map, event.id, event.x, event.y))
-        editor_area.pasteElementEvent.connect(
-            lambda element: self._insert_element(map, element))
-        editor_area.pasteTextEvent.connect(
-            lambda text: self._insert_text(map, text))
-
         # Element Properties side bar
         element_properties_sidebar = ElementPropertiesWidget()
         editor_area.focusObjectEvent.connect(
@@ -239,6 +224,27 @@ class EditorView(View):
             )
         )
         main_layout.addWidget(text_properties_sidebar)
+
+            # MARK: Editor events
+        # Handle editor events
+        editor_area.addElementEvent.connect(
+            lambda event: self._create_element(map, event.x, event.y))
+        editor_area.moveElementEvent.connect(
+            lambda event: self._move_element(map, event.id, event.x, event.y))
+        editor_area.addTextEvent.connect(
+            lambda event: self._create_text(map, event.x, event.y))
+        editor_area.moveTextEvent.connect(
+            lambda event: self._move_text(map, event.id, event.x, event.y))
+        editor_area.pasteElementEvent.connect(
+            lambda element: self._insert_element(map, element))
+        editor_area.pasteTextEvent.connect(
+            lambda text: self._insert_text(map, text))
+        editor_area.removeElementEvent.connect(
+            lambda element_id: map.remove_element(element_id) and element_properties_sidebar.setElement(None)
+        )
+        editor_area.removeTextEvent.connect(
+            lambda text_id: map.remove_text(text_id) and text_properties_sidebar.setText(None)
+        )
 
         # When elements change, this is ran
         def render_lambda():

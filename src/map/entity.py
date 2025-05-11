@@ -12,8 +12,12 @@ from map.types import (
     AssetNotFoundException,
     MapText,
     TextEditable,
-    TextNotFoundException
+    TextNotFoundException,
+    MapOutdatedException
 )
+
+
+current_map_version = 2
 
 
 class Map:  # MARK: Map
@@ -21,12 +25,14 @@ class Map:  # MARK: Map
 
     Attributes:
         name (str): The maps name.
+        version (int): The map file version.
         map_file (Path): The Path instance of the map's location on disk.
         elements (List[Element]): List of elements on the map.
         _connection (Connection | None): SQLite3 connection of the map.
         _on_change (MethodType | None): A method, when defined, called when the map is modified.
     """
     name: str | None
+    version: int | None
     map_file: Path
     elements: List[Element]
     _connection: Connection | None
@@ -128,6 +134,7 @@ class Map:  # MARK: Map
             FileNotFoundError: The path of the map file is invalid
             ValueError: The map is already open
             MapMetadataMalformedException: The map's data is malformed and it cannot be opened
+            MapOutdatedException: The map is outdated, version too low or not present
         """
         # Make sure we can open the map
         if not self.map_file or not self.map_file.exists():
@@ -138,11 +145,24 @@ class Map:  # MARK: Map
 
         self._connection = connect(self.map_file)
 
+        # Check that meta contains required version
+        # Some old map files don't have it
+        [[column_count]], _ = self._query(query=sql_table["get_meta_size"], limit=1)
+        if not column_count or column_count < 3:
+            raise MapOutdatedException(self.map_file.absolute())
+
+
         # Read the name of the map
-        [result], _ = self._query(query=sql_table["get_name"], limit=1)
-        if not result:
+        [meta], _ = self._query(query=sql_table["get_meta"], limit=1)
+        if not meta:
             raise MapMetadataMalformedException(self.map_file.absolute())
-        self.name = result[0]
+        
+        # Detect outdated version
+        if meta[0] < current_map_version:
+            raise MapOutdatedException(self.map_file.absolute())
+
+        self.name = meta[1]
+        self.version = meta[0]
 
     # Set the map name
     def set_name(self, name: str) -> str:
@@ -449,4 +469,4 @@ class Map:  # MARK: Map
         if not self.text_exists(text_id):
             raise TextNotFoundException(text_id)
         self._execute(query=sql_table["remove_text"], parameters=(text_id,))
-        self._did_change()
+        self._did_change() 

@@ -422,29 +422,28 @@ class EditorGraphicsView(QtWidgets.QGraphicsView):  # MARK: Editor
     # MARK: Set focus
     def _setFocusedObjectWidget(self, object: TileWidget | TextWidget | None):
         # Set focused object in the editor
-        if object == None:
+        if object == None:          
+            # Remove focus from old object
+            if self.focusedObjectWidget and isValid(self.focusedObjectWidget):
+                self.focusedObjectWidget.setFocusRing(False)
+
+            # Remove all focus
             self.focusedObject = None
             self.focusedObjectWidget = None
             self.focusObjectEvent.emit(FocusEvent(None, None))
         else:
+            # Remove focus from old object
+            if self.focusedObjectWidget and isValid(self.focusedObjectWidget):
+                self.focusedObjectWidget.setFocusRing(False)
+
             self.focusedObjectWidget = object
+            self.focusedObjectWidget.setFocusRing(True) # Make ring visible
             self.focusedObject = list(filter(
                 lambda obj: obj.id == object.id and obj.type == object.type, self.objects))[0]
             if not self.focusedObject:
                 raise RenderingException(
                     "ERROR: Object to focus is not in objects cache! Cannot focus.")
             self.focusObjectEvent.emit(FocusEvent(object.id, object.type))
-
-    def mousePressEvent(self, event: QtGui.QMouseEvent):
-        # Maintain focus when using left click
-        # NOTE: This causes some stutter, why?
-        clone = self.focusedObjectWidget
-        was_focused = self.focusedObject
-        if was_focused is not None and event.button() == QtCore.Qt.LeftButton and isValid(clone):
-            clone.focused = True
-            self._setFocusedObjectWidget(was_focused)
-
-        return super().mousePressEvent(event)
 
     def _render_element_object(self, element: Element) -> bool:  # MARK: Render
         # Add grid elements to the map

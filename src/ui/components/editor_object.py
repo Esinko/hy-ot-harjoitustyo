@@ -10,14 +10,12 @@ class EditorObject(QtCore.QObject, QtWidgets.QGraphicsRectItem):
         type (str): Object type (often element or text)
         id (int): Unique id usually from the DB.
         edit_circle_radius (32): Hardcoded edit circle size.
-        focused (bool): If this object thinks it is in focus
     """
     focusEvent = QtCore.Signal(bool)
     focused: bool = False
     type: str = "any"
     id: int
     edit_circle_radius: int = 32
-    focused: bool = False
 
     def __init__(self, *args, object_id: int, type: str, **kwargs):
         QtCore.QObject.__init__(self)
@@ -37,7 +35,6 @@ class EditorObject(QtCore.QObject, QtWidgets.QGraphicsRectItem):
     def paint(self, painter, option, widget):
         super().paint(painter, option, widget)
         self.setZValue(1)
-
         if self.focused:
             # Draw draggable circle in center
             center = self.rect().center()
@@ -67,19 +64,11 @@ class EditorObject(QtCore.QObject, QtWidgets.QGraphicsRectItem):
         # Forced focus
         if event.reason() == QtCore.Qt.FocusReason.NoFocusReason:
             self.focusEvent.emit(True)
-            self.focused = True
 
         super().focusInEvent(event)
 
-    # Handle focus out
-    def focusOutEvent(self, event: QtGui.QFocusEvent):
-        # Do not allow popups to steal focus
-        if QtWidgets.QApplication.focusWidget().__class__.__name__ == "EditorGraphicsView":
-            if event.reason() != QtCore.Qt.FocusReason.PopupFocusReason:
-                self.focusEvent.emit(False)
-                self.focused = False
-            
-        super().focusOutEvent(event)
+    def setFocusRing(self, focused: bool):
+        self.focused = focused
 
     # Handle dragging to other position
     def mousePressEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent):

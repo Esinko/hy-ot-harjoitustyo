@@ -64,27 +64,32 @@ class TileWidget(EditorObject):  # MARK: Tile
             rotation (int): The rotation of the element's contents. Defaults to 0.
         """
         super().__init__(*args, object_id=tile_id, type="element")
+        self.setFlag(QtWidgets.QGraphicsItem.ItemClipsChildrenToShape, True)
         self.is_preview = is_preview
 
         # Render background or default color
         if background_image:
-            # Create pixmap from image
-            background = QtGui.QImage.fromData(background_image)
-            pixmap = QtGui.QPixmap.fromImage(background)
+            # Create pixmap for background
+            img = QtGui.QImage.fromData(background_image)
+            pixmap = QtGui.QPixmap.fromImage(img)
+            scaled_pixmap = pixmap.scaled(
+                self.rect().size().toSize(),
+                QtCore.Qt.KeepAspectRatioByExpanding,
+                QtCore.Qt.SmoothTransformation
+            )
 
-            # Scale the pixmap
-            scaled_pixmap = pixmap.scaled(self.rect().size().toSize())
+            # Create item for pixmap
+            pixmap_child_item = QtWidgets.QGraphicsPixmapItem(
+                scaled_pixmap, parent=self)
+            pixmap_child_item.setFlag(
+                QtWidgets.QGraphicsItem.ItemStacksBehindParent, True)
 
-            # Add rotation
-            pixmap_center = scaled_pixmap.rect().center()
-            pixmap_transform = QtGui.QTransform()
-            pixmap_transform.translate(pixmap_center.x(), pixmap_center.y())
-            pixmap_transform.rotate(rotation)
-            pixmap_transform.translate(-pixmap_center.x(), -pixmap_center.y())
-            rotated_pixmap = scaled_pixmap.transformed(pixmap_transform)
-
-            # Paint the background
-            self.setBrush(QtGui.QBrush(rotated_pixmap))
+            # Rotate along tile center
+            tile_center = self.boundingRect().center()
+            pix_center = pixmap_child_item.boundingRect().center()
+            pixmap_child_item.setPos(tile_center - pix_center)
+            pixmap_child_item.setTransformOriginPoint(pix_center)
+            pixmap_child_item.setRotation(rotation)
         else:
             self.setBrush(QtGui.QBrush(
                 QtGui.QColor(background_color or "#8F9092")))
@@ -245,8 +250,8 @@ class EditorGraphicsView(QtWidgets.QGraphicsView):  # MARK: Editor
             is_preview (bool): Enable/disable preview mode
         """
         self.is_preview = is_preview
-        self.render(self.objects) # Updates labels
-        self.viewport().update() # Updates editor
+        self.render(self.objects)  # Updates labels
+        self.viewport().update()  # Updates editor
 
     def _getAdjustedCoordinate(self, coordinate: int | float):
         """Get the adjusted 1/256 coordinates.
@@ -288,7 +293,7 @@ class EditorGraphicsView(QtWidgets.QGraphicsView):  # MARK: Editor
         self.scale(factor, factor)
         self.scale_factor = new_scale
 
-    def keyPressEvent(self, event: QtGui.QKeyEvent): # MARK: Keyboard
+    def keyPressEvent(self, event: QtGui.QKeyEvent):  # MARK: Keyboard
         if event.key() == QtCore.Qt.Key_Escape:
             # Remove focus with ESC
             self._setFocusedObjectWidget(None)
@@ -307,10 +312,11 @@ class EditorGraphicsView(QtWidgets.QGraphicsView):  # MARK: Editor
                 self.pasteElementEvent.emit(self.clipboard)
             else:
                 print("ERROR: Cannot copy unsupported object!")
-            
+
             # Return focus
             if self.focusedObjectWidget and isValid(self.focusedObjectWidget):
-                self.focusedObjectWidget.setFocus(QtCore.Qt.FocusReason.NoFocusReason)
+                self.focusedObjectWidget.setFocus(
+                    QtCore.Qt.FocusReason.NoFocusReason)
         elif event.key() == QtCore.Qt.Key_Delete and self.focusedObject:
             if isinstance(self.focusedObject, MapText):
                 self.removeTextEvent.emit(self.focusedObject.id)
@@ -418,7 +424,7 @@ class EditorGraphicsView(QtWidgets.QGraphicsView):  # MARK: Editor
     # MARK: Set focus
     def _setFocusedObjectWidget(self, object: TileWidget | TextWidget | None):
         # Set focused object in the editor
-        if object == None:          
+        if object == None:
             # Remove focus from old object
             if self.focusedObjectWidget and isValid(self.focusedObjectWidget):
                 self.focusedObjectWidget.setFocusRing(False)
@@ -433,7 +439,7 @@ class EditorGraphicsView(QtWidgets.QGraphicsView):  # MARK: Editor
                 self.focusedObjectWidget.setFocusRing(False)
 
             self.focusedObjectWidget = object
-            self.focusedObjectWidget.setFocusRing(True) # Make ring visible
+            self.focusedObjectWidget.setFocusRing(True)  # Make ring visible
             self.focusedObject = list(filter(
                 lambda obj: obj.id == object.id and obj.type == object.type, self.objects))[0]
             if not self.focusedObject:

@@ -36,6 +36,8 @@ class EditorObject(QtCore.QObject, QtWidgets.QGraphicsRectItem):
         super().paint(painter, option, widget)
         self.setZValue(1)
         if self.focused:
+            self.setZValue(100)
+
             # Draw draggable circle in center
             center = self.rect().center()
             fill = QtGui.QColor("#FFFFFF")
@@ -46,7 +48,6 @@ class EditorObject(QtCore.QObject, QtWidgets.QGraphicsRectItem):
                 center, self.edit_circle_radius, self.edit_circle_radius)
 
             # Add outline
-            self.setZValue(100)
             pen = QtGui.QPen(QtGui.QColor("#F89B2E"), 2)
             pen.setCosmetic(True)
             painter.setPen(pen)

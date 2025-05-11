@@ -323,7 +323,8 @@ class ColorInputWidget(InputGroupWidget):
         """Private method that opens the native OS provided color picker.
         """
         dialog = QtWidgets.QColorDialog(parent=self.parentWidget())
-        dialog.setOption(QtWidgets.QColorDialog.ColorDialogOption.DontUseNativeDialog)
+        dialog.setOption(
+            QtWidgets.QColorDialog.ColorDialogOption.DontUseNativeDialog)
         if dialog.exec() == QtWidgets.QDialog.DialogCode.Accepted:
             color = dialog.selectedColor()
             if color.isValid():

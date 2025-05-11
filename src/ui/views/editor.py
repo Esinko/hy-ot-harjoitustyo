@@ -134,7 +134,8 @@ class EditorView(View):
         map_icon_label.setFixedSize(24, 24)
 
         # Map name on the left
-        map_name = QtWidgets.QLabel(f"Map: {map.name if len(map.name) < 32 else map.name[:32] + '...'}")
+        map_name = QtWidgets.QLabel(
+            f"Map: {map.name if len(map.name) < 32 else map.name[:32] + '...'}")
         map_name_font = map_name.font()
         map_name_font.setPointSize(10)
         map_name.setFont(map_name_font)

@@ -35,13 +35,22 @@ class AddObjectButtonWidget(QtWidgets.QPushButton):
         mime.setText(self.mime_text)
         drag.setMimeData(mime)
 
-        # New element preview
-        # TODO: Add type based preview
-        pixmap = QtGui.QPixmap(32, 32)
+        # Use given icon as preview
+        pixmap = QtGui.QPixmap(self.size())
         pixmap.fill(QtGui.QColor("#8F9092"))
+        icon_pixmap = self.icon().pixmap(self.iconSize())
+        painter = QtGui.QPainter(pixmap)
+        icon_rect = QtCore.QRect(
+            (pixmap.width() - icon_pixmap.width()) // 2,
+            (pixmap.height() - icon_pixmap.height()) // 2,
+            icon_pixmap.width(),
+            icon_pixmap.height()
+        )
+        painter.drawPixmap(icon_rect, icon_pixmap)
+        painter.end()
+        
         drag.setPixmap(pixmap)
         drag.setHotSpot(QtCore.QPoint(16, 16))
-
         drag.exec(QtCore.Qt.DropAction.CopyAction)
 
 

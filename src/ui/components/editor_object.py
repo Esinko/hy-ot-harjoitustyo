@@ -1,3 +1,4 @@
+from os.path import abspath
 from typing import Literal
 from PySide6 import QtWidgets, QtGui, QtCore
 
@@ -95,9 +96,22 @@ class EditorObject(QtCore.QObject, QtWidgets.QGraphicsRectItem):
                 mime = QtCore.QMimeData()
                 mime.setText(f"BDM; move_{self.type} {self.id}")
                 drag.setMimeData(mime)
-                # TODO: Update preview
-                pixmap = QtGui.QPixmap(32, 32)
+
+                icon = QtGui.QIcon(abspath("./ui/icons/move.svg"))
+                size = icon.actualSize(QtCore.QSize(32, 32))
+                pixmap = QtGui.QPixmap(size)
                 pixmap.fill(QtGui.QColor("#8F9092"))
+                icon_pixmap = icon.pixmap(size)
+                painter = QtGui.QPainter(pixmap)
+                icon_rect = QtCore.QRect(
+                    (pixmap.width() - icon_pixmap.width()) // 2,
+                    (pixmap.height() - icon_pixmap.height()) // 2,
+                    icon_pixmap.width(),
+                    icon_pixmap.height()
+                )
+                painter.drawPixmap(icon_rect, icon_pixmap)
+                painter.end()
+                
                 drag.setPixmap(pixmap)
                 drag.setHotSpot(QtCore.QPoint(16, 16))
                 drag.exec(QtCore.Qt.DropAction.CopyAction)
@@ -107,4 +121,5 @@ class EditorObject(QtCore.QObject, QtWidgets.QGraphicsRectItem):
                     QtWidgets.QGraphicsView.DragMode.ScrollHandDrag)
                 event.accept()
                 return
+        
         super().mousePressEvent(event)

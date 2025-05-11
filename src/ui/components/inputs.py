@@ -69,13 +69,14 @@ class ImageFileInputWidget(StandardButtonWidget):
     selectFileEvent = QtCore.Signal(SelectFileEvent)
 
     def _select_file(self):
-        file_path, _ = QtWidgets.QFileDialog.getOpenFileName(
-            None,
-            "Select Image",
-            "",
-            "Images (*.png *.jpg *.jpeg)"
-        )
-        if file_path:
+        dialog = QtWidgets.QFileDialog(self)
+        dialog.setOption(QtWidgets.QFileDialog.Option.DontUseNativeDialog)
+        dialog.setNameFilter("Images (*.png *.jpg *.jpeg)")
+        dialog.setFileMode(QtWidgets.QFileDialog.FileMode.ExistingFile)
+        dialog.setWindowTitle("Select Image")
+
+        if dialog.exec() == QtWidgets.QDialog.DialogCode.Accepted:
+            file_path = dialog.selectedFiles()[0]
             self.selectFileEvent.emit(SelectFileEvent(file_path))
 
     def __init__(self, parent=None):
@@ -321,12 +322,14 @@ class ColorInputWidget(InputGroupWidget):
     def _choose_color(self):
         """Private method that opens the native OS provided color picker.
         """
-        color = QtWidgets.QColorDialog.getColor(
-            self.color, self.parentWidget())
-        if color.isValid():
-            self.color = color
-            self.color_changed.emit(color)
-            self._update_style()
+        dialog = QtWidgets.QColorDialog(parent=self.parentWidget())
+        dialog.setOption(QtWidgets.QColorDialog.ColorDialogOption.DontUseNativeDialog)
+        if dialog.exec() == QtWidgets.QDialog.DialogCode.Accepted:
+            color = dialog.selectedColor()
+            if color.isValid():
+                self.color = color
+                self.color_changed.emit(color)
+                self._update_style()
 
     def set_color(self, color: str):
         """Set the color of the input.

@@ -29,11 +29,15 @@ class TestMap(unittest.TestCase):
             "x": 0,
             "y": 0,
             "width": 1,
-            "height": 1
+            "height": 1,
+            "background_image": None,
+            "rotation": 22,
+            "background_color": None
         }
         self.assertEqual(len(map.get_elements()), 0)
         map.create_element(element_dict)
-        self.assertEqual(len(map.get_elements()), 1)
+        elements = map.get_elements()
+        self.assertEqual(len(elements), 1)
 
     def test_add_element_properties(self):
         map = self.store.create_map("secret-name", "test-map")
@@ -48,21 +52,15 @@ class TestMap(unittest.TestCase):
                 "name": "test",
                 "data": list(image_data)
             },
-            "rotation": 0,
+            "rotation": 21,
             "background_color": None
         }
         element = map.create_element(element_dict)
         elements = map.get_elements()
-        self.assertEqual(elements[0].id, element.id)
-        self.assertEqual(elements[0].name, element_dict["name"])
-        self.assertEqual(elements[0].x, 0)
-        self.assertEqual(elements[0].y, 0)
-        self.assertEqual(elements[0].width, 1)
-        self.assertEqual(elements[0].width, 1)
         self.assertEqual(len(elements), 1)
-        self.assertEqual(elements[0].background_image.data, image_data)
-        self.assertEqual(elements[0].background_image.name,
-                         element_dict["background_image"]["name"])
+        element_dict["id"] = element.id
+        element_dict["background_image"]["id"] = element.background_image.id
+        self.assertDictEqual(elements[0].to_dict(), element_dict)
 
     def test_remove_element(self):
         map = self.store.create_map("secret-name", "test-map")
@@ -80,6 +78,40 @@ class TestMap(unittest.TestCase):
         map.remove_element(element.id)
         elements = map.get_elements()
         self.assertEqual(len(elements), 0)
+
+    def test_edit_tile(self):
+        map = self.store.create_map("secret-name", "test-map")
+        element_dict = {
+            "name": "Test tile",
+            "x": 0,
+            "y": 0,
+            "width": 1,
+            "height": 1,
+            "rotation": 0,
+            "background_color": None,
+            "background_image": None
+        }
+        element = map.create_element(element_dict)
+        image_data = Path("./src/tests/sample_image.jpg").read_bytes()
+        edited_element_dict = {
+            "id": element.id,
+            "name": "Edited Test tile",
+            "x": 1,
+            "y": 1,
+            "width": 2,
+            "height": 1,
+            "background_image": {
+                "name": "test2",
+                "data": list(image_data)
+            },
+            "rotation": 11,
+            "background_color": "#000"
+        }
+        edited_element = map.edit_element(element.id, edited_element_dict)
+        elements = map.get_elements()
+        self.assertEqual(len(elements), 1)
+        edited_element_dict["background_image"]["id"] = edited_element.background_image.id
+        self.assertDictEqual(elements[0].to_dict(), edited_element_dict)
 
     def test_add_text_properties(self):
         map = self.store.create_map("secret-name", "test-map")

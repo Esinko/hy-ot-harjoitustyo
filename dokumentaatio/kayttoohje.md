@@ -82,9 +82,11 @@ Kun liität kopioidun elementin, se ilmestyy alkuperäisen elementin oikealle pu
 
 ### Karttanäkymän tilat
 Karttanäkymässä on kaksi eri katselutilaa. Katsetulaa saa vaihdettua yläpalkin oikeasta reunasta seuraavalla monivalinnalla:
+
 ![view_mode](./kayttoohje-kuvat/view_mode.png)
 
 Klikkaamalla monivalintaa voit valita kahdesta eri katselutilasta:
+
 ![view_options](./kayttoohje-kuvat/view_options.png)
 
 **Katselutilat**

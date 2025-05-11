@@ -245,7 +245,7 @@ class EditorGraphicsView(QtWidgets.QGraphicsView):  # MARK: Editor
             is_preview (bool): Enable/disable preview mode
         """
         self.is_preview = is_preview
-        self.render(self.objects)
+        self.viewport().update()
 
     def _getAdjustedCoordinate(self, coordinate: int | float):
         """Get the adjusted 1/256 coordinates.

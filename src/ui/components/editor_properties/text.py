@@ -39,7 +39,12 @@ class TextPropertiesWidget(EditorSidebar):
         # Set values
         self.name_input.setDisabled(text is None)
         self.name_input.setText(text.name if text is not None else "")
-        self.value_input.setPlainText(text.value if text is not None else "")
+        if text:
+            # We need to check this to fix textbox reflow
+            if text.value != self.value_input.toPlainText():
+                self.value_input.setPlainText(text.value)
+        else:
+            self.value_input.setPlainText("")
         self.value_input.setDisabled(text is None)
         self.delete_button.setDisabled(text is None)
         self.rotation_dial.setDisabled(text is None)

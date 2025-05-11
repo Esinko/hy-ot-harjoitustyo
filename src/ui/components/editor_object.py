@@ -1,15 +1,5 @@
 from os.path import abspath
-from typing import Literal
 from PySide6 import QtWidgets, QtGui, QtCore
-
-
-class FocusEvent:
-    id: int | None
-    type = Literal["element", "text", None]
-
-    def __init__(self, id: int, type: Literal["element", "text"]):
-        self.id = id
-        self.type = type
 
 
 class EditorObject(QtCore.QObject, QtWidgets.QGraphicsRectItem):
@@ -21,7 +11,8 @@ class EditorObject(QtCore.QObject, QtWidgets.QGraphicsRectItem):
         id (int): Unique id usually from the DB
         edit_circle_radius (32): Hardcoded edit circle size
     """
-    focusEvent = QtCore.Signal(FocusEvent)
+    focusEvent = QtCore.Signal(bool)
+    focused: bool = False
     type: str = "any"
     id: int
     edit_circle_radius: int = 32
@@ -65,20 +56,25 @@ class EditorObject(QtCore.QObject, QtWidgets.QGraphicsRectItem):
 
     # Only allow right mouse button to set focus
     def focusInEvent(self, event: QtGui.QFocusEvent):
-        if QtWidgets.QApplication.mouseButtons() != QtCore.Qt.MouseButton.RightButton and event.reason() != QtCore.Qt.FocusReason.OtherFocusReason:
-            self.clearFocus()
-            event.ignore()
-            return
-        self.focusEvent.emit(FocusEvent(self.id, self.type))
+        # Natural focus
+        if QtWidgets.QApplication.mouseButtons() == QtCore.Qt.MouseButton.RightButton:
+            if event.reason() == QtCore.Qt.FocusReason.MouseFocusReason:
+                self.focusEvent.emit(True)
+
+        # Forced focus
+        if event.reason() == QtCore.Qt.FocusReason.NoFocusReason:
+            self.focusEvent.emit(True)
+
         super().focusInEvent(event)
 
-    # Only remove focus if clicked somewhere else
+    # Handle focus out
     def focusOutEvent(self, event: QtGui.QFocusEvent):
-        # Ignore losing focus if it's not to another object
-        if isinstance(QtWidgets.QApplication.focusWidget(), EditorObject):
-            super().focusOutEvent(event)
-        else:
-            event.ignore()
+        # Do not allow popups to steal focus
+        if event.reason() != QtCore.Qt.FocusReason.PopupFocusReason and QtWidgets.QApplication.focusWidget().__class__.__name__ == "EditorGraphicsView":
+            self.focusEvent.emit(False)
+            self.focused = False
+
+        super().focusOutEvent(event)
 
     # Handle dragging to other position
     def mousePressEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent):

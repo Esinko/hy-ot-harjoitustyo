@@ -369,120 +369,180 @@ class DropdownGroup:
 
 
 class StandardDropdownWidget(QtWidgets.QWidget):
-    """Dropdown styled to look like a button. Drop-in replacement for ComboBox.
-    """
-
+    """Dropdown styled to look like a button. Drop-in replacement for ComboBox."""
+    
     selectEvent = QtCore.Signal(ComplexOption)
     currentIndexChanged = QtCore.Signal(int)
-    button: QtWidgets.QToolButton
 
-    def _fallback_signal(self, i, text):
+    def _fallback_signal(self, i: int, text: str):
         self.currentIndexChanged.emit(i)
         self.button.setText(text)
 
-    def __init__(self, text: str | None = None, options: List[DropdownGroup | str] = []):
+    def __init__(
+        self,
+        text: str | None = None,
+        options: List[DropdownGroup | str] = []
+    ):
         super().__init__()
         layout = QtWidgets.QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
-        self.button = QtWidgets.QToolButton()
+        
+        # Create menu button
+        self.button = QtWidgets.QToolButton(self)
         self.button.setPopupMode(QtWidgets.QToolButton.InstantPopup)
-        self.setStyleSheet("""
+        self.button.setStyleSheet("""
             QToolButton {
                 color: white;
                 background: qlineargradient(x1:0, y1:1, x2:0, y2:0,
                                             stop:0 #373737, stop:1 #535353);
                 border: 1px solid #292929;
                 border-radius: 4px;
-                padding: 4px 28px 4px 8px; /* extra right padding for arrow */
+                padding: 4px 28px 4px 8px;
                 text-align: left;
+            }
+            QToolButton:hover, QToolButton:focus {
+                background: qlineargradient(x1:0, y1:1, x2:0, y2:0,
+                                            stop:0 #FDA239, stop:1 #F0851B);
+            }
+            QToolButton::menu-indicator {
+                image: url(ui/icons/chevron-down.svg);
+                width: 14px; height: 14px;
+                subcontrol-position: right center;
+                padding-left: 4px; padding-right: 4px;
+                border-left: 1px solid #292929;
             }
             QToolButton:disabled {
                 background: qlineargradient(x1:0, y1:1, x2:0, y2:0,
                                             stop:0 #535353, stop:1 #646464);
             }
-            QToolButton::menu-indicator {
-                image: url(ui/icons/chevron-down.svg);
-                width: 14px;
-                height: 14px;
-                subcontrol-position: right center;
-                subcontrol-origin: padding;
-                padding-left: 4px;
-                padding-right: 4px;
-                border-left: 1px solid #292929; /* vertical line */
-            }
-            QToolButton:hover {
-                background: qlineargradient(x1:0, y1:1, x2:0, y2:0,
-                                            stop:0 #FDA239, stop:1 #F0851B);
-            }
         """)
 
-        # Set text
-        if not text and isinstance(options[0], str):
+        # Add button value
+        if not text and options and isinstance(options[0], str):
             self.button.setText(options[0])
         else:
-            self.button.setText(text)
-
+            self.button.setText(text or "")
+        
         # Create menu
-        self.menu = QtWidgets.QMenu()
+        self.menu = QtWidgets.QMenu(self)
         self.menu.setStyleSheet("""
             QMenu {
-                background: qlineargradient(x1:0, y1:1, x2:0, y2:0,
-                                            stop:0 #373737, stop:1 #535353);
-                color: white;
-                border: 1px solid #292929;
-                max-height: 400px;
-            }
-            QMenu::item {
-                padding: 6px 12px;
-                background-color: transparent;
-            }
-            QMenu::item:selected {
-                background-color: qlineargradient(x1:0, y1:1, x2:0, y2:0,
-                                            stop:0 #FDA239, stop:1 #F0851B);
-            }
-            QMenu::item:disabled {
                 background: transparent;
+                border: 1px solid #292929;
                 color: white;
-                padding: 2px 12px;
-                margin-top: 4px;
-                text-decoration: underline;
-            }
-            QMenu::separator {
-                height: 1px;
-                background: #292929;
             }
         """)
-
-        # Create options
-        self.setOptions(options)
-
+        
+        # Create item container
+        self._scroll_container = QtWidgets.QWidget()
+        self._scroll_container.setStyleSheet("""
+            background: qlineargradient(x1:0, y1:1, x2:0, y2:0,
+                                        stop:0 #373737, stop:1 #535353);
+        """)
+        self._scroll_layout = QtWidgets.QVBoxLayout(self._scroll_container)
+        self._scroll_layout.setContentsMargins(0, 0, 0, 0)
+        self._scroll_layout.setSpacing(0)
+        
+        # Create scroll area
+        self._scroll_area = QtWidgets.QScrollArea()
+        self._scroll_area.setWidget(self._scroll_container)
+        self._scroll_area.setWidgetResizable(True)
+        self._scroll_area.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self._scroll_area.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
+        self._scroll_area.setFrameShape(QtWidgets.QFrame.NoFrame)
+        self._scroll_area.setMaximumHeight(200)
+        
+        # Add scroll area to menu
+        scroll_action = QtWidgets.QWidgetAction(self.menu)
+        scroll_action.setDefaultWidget(self._scroll_area)
+        self.menu.addAction(scroll_action)
         self.button.setMenu(self.menu)
         layout.addWidget(self.button)
-
+        
+        # populate initial options
+        self.setOptions(options)
+    
     def setOptions(self, options: List[DropdownGroup | str] = []):
-        self.menu.clear()
-
+        # Remove old buttons
+        while self._scroll_layout.count():
+            item = self._scroll_layout.takeAt(0)
+            if w := item.widget():
+                w.deleteLater()
+        
+        action_button_style = """
+            QPushButton, QLabel {
+                text-align: left;
+                padding: 6px 24px 6px 12px;
+                border: none;
+                background: transparent;
+                color: white;
+            }
+            QPushButton:hover {
+                background: qlineargradient(x1:0, y1:1, x2:0, y2:0,
+                                            stop:0 #FDA239, stop:1 #F0851B);
+            }
+        """
+        
+        # Build items
         for i, group in enumerate(options):
-            if isinstance(group, DropdownGroup):
-                self.menu.addAction(QtGui.QAction(
-                    text=group.name, parent=self, disabled=True))
-                for j, option in enumerate(group.options):
-                    value = option["text"] if isinstance(
-                        option, dict) else option
-                    action = QtGui.QAction(value, self)
-                    action.triggered.connect(lambda _, i=i, j=j, option=option, value=value:
-                                             self.selectEvent.emit({
-                                                 "group_index": i,
-                                                 "item_index": j,
-                                                 "id": option["id"] if isinstance(option, dict) else None,
-                                                 "text": value
-                                             }))
-                    self.menu.addAction(action)
+            if hasattr(group, "name") and hasattr(group, "options"):
+                # Group name
+                header = QtWidgets.QLabel(group.name)
+                header.setStyleSheet("""
+                    color: white;
+                    padding: 4px 28px 4px 8px;
+                    background: transparent;
+                    font-size: 11px;
+                    font-weight: bold;
+                """)
+                self._scroll_layout.addWidget(header)
+                
+                # Create buttons for this group
+                for j, opt in enumerate(group.options):
+                    txt = opt["text"] if isinstance(opt, dict) else opt
+                    action_button = QtWidgets.QPushButton(txt)
+                    action_button.setFlat(True)
+                    action_button.setCursor(QtCore.Qt.PointingHandCursor)
+                    action_button.setStyleSheet(action_button_style)
+                    action_button.clicked.connect(
+                        lambda _, gi=i, ii=j, option=opt, txt=txt: (
+                            self.selectEvent.emit({
+                                "group_index": gi,
+                                "item_index": ii,
+                                "id": option.get("id") if isinstance(option, dict) else None,
+                                "text": txt
+                            }),
+                            self.menu.hide()
+                        )
+                    )
+                    self._scroll_layout.addWidget(action_button)
+                    
+                    # Button border
+                    if j != len(group.options) - 1:
+                        line = QtWidgets.QFrame()
+                        line.setFrameShape(QtWidgets.QFrame.HLine)
+                        line.setFrameShadow(QtWidgets.QFrame.Sunken)
+                        line.setStyleSheet("background: #292929;")
+                        line.setFixedHeight(1)
+                        self._scroll_layout.addWidget(line)
             else:
-                # Provides compatibility for combo box
-                action = QtGui.QAction(group, self)
-                self.menu.addAction(action)
-                action.triggered.connect(
-                    lambda _, i=i, text=group: self._fallback_signal(i, text))
-
-            self.menu.addSeparator()
+                # Fallback to simple options
+                action_button = QtWidgets.QPushButton(group)
+                action_button.setFlat(True)
+                action_button.setCursor(QtCore.Qt.PointingHandCursor)
+                action_button.setStyleSheet(action_button_style)
+                action_button.clicked.connect(
+                    lambda _, idx=i, txt=group: (
+                        self._fallback_signal(idx, txt),
+                        self.menu.hide()
+                    )
+                )
+                self._scroll_layout.addWidget(action_button)
+            
+            # Group separator
+            if i != len(options) - 1:
+                line = QtWidgets.QFrame()
+                line.setFrameShape(QtWidgets.QFrame.HLine)
+                line.setFrameShadow(QtWidgets.QFrame.Sunken)
+                line.setStyleSheet("margin: 4px 0; background: #292929;")
+                self._scroll_layout.addWidget(line)

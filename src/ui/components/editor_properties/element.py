@@ -143,12 +143,16 @@ class ElementPropertiesWidget(EditorSidebar):
         # We need to re-run this to rebuild the list
         self.image_library_picker.setOptions([
             DropdownGroup(name="Defaults", options=(
-                {"text": image_name, "id": default_images[image_name]}
-                for image_name in default_images.keys()
+                [
+                    {"text": image_name, "id": default_images[image_name]}
+                    for image_name in default_images.keys()]
+
             )),
             DropdownGroup(name="Copy", options=(
-                {"text": asset.name, "id": f"a-{asset.id}"}
-                for asset in self.available_assets
+                [
+                    {"text": asset.name, "id": f"a-{asset.id}"}
+                    for asset in self.available_assets
+                ]
             ))
         ])
 

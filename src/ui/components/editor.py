@@ -1,8 +1,9 @@
 from dataclasses import dataclass
 from copy import deepcopy
 from PySide6 import QtWidgets, QtGui, QtCore
-from map.types import Element
 from typing import List, Literal, Union
+from shiboken6 import isValid
+from map.types import Element
 from map.types import MapText
 from ui.components.editor_object import EditorObject
 from ui.components.typography import GraphicsLabel
@@ -315,15 +316,6 @@ class EditorGraphicsView(QtWidgets.QGraphicsView):  # MARK: Editor
         else:
             super().keyPressEvent(event)
 
-    def drawForeground(self, painter: QtGui.QPainter, rect: QtCore.QRectF):
-        # Things to handle on each render that are not default QT drawing stuff
-        # Make sure correct tile has focus
-        if self.focusedObject and not self.focusedObjectWidget.hasFocus():
-            QtCore.QTimer.singleShot(
-                0, lambda: self.focusedObjectWidget.setFocus(QtCore.Qt.OtherFocusReason))
-
-        super().drawForeground(painter, rect)
-
     def drawBackground(self, painter: QtGui.QPainter, rect: QtCore.QRectF):
         # Draw the editor background (grid)
         super().drawBackground(painter, rect)
@@ -389,6 +381,7 @@ class EditorGraphicsView(QtWidgets.QGraphicsView):  # MARK: Editor
                 self.moveElementEvent.emit(
                     MoveElementEvent(target_tile, tile_x, tile_y))
                 event.accept()
+                self.focusedObjectWidget.setFocus(QtCore.Qt.FocusReason.NoFocusReason)
             elif event_mime_text.startswith("BDM; move_text "):
                 target_text = int(event_mime_text.split(" ")[2])
 
@@ -406,6 +399,7 @@ class EditorGraphicsView(QtWidgets.QGraphicsView):  # MARK: Editor
                 self.moveTextEvent.emit(MoveTextEvent(
                     target_text, centered_x, centered_y))
                 event.accept()
+                self.focusedObjectWidget.setFocus(QtCore.Qt.FocusReason.NoFocusReason)
             elif event_mime_text == "BDM; new_text":
                 self.addTextEvent.emit(AddTextEvent(
                     scene_pos.x(), scene_pos.y()))
@@ -433,7 +427,15 @@ class EditorGraphicsView(QtWidgets.QGraphicsView):  # MARK: Editor
                 raise RenderingException(
                     "ERROR: Object to focus is not in objects cache! Cannot focus.")
             self.focusObjectEvent.emit(FocusEvent(object.id, object.type))
-        self.viewport().update()
+    
+    def mousePressEvent(self, event: QtGui.QMouseEvent):
+        # Maintain focus when using left click
+        # NOTE: This causes some stutter, why?
+        clone = self.focusedObjectWidget
+        was_focused = self.focusedObject is not None
+        super().mousePressEvent(event)
+        if was_focused and event.button() == QtCore.Qt.LeftButton and isValid(clone):
+            clone.setFocus(QtCore.Qt.FocusReason.NoFocusReason)
 
     def _render_element_object(self, element: Element) -> bool:  # MARK: Render
         # Add grid elements to the map
@@ -448,7 +450,7 @@ class EditorGraphicsView(QtWidgets.QGraphicsView):  # MARK: Editor
                           rotation=element.rotation,
                           is_preview=self.is_preview)
 
-        tile.focusEvent.connect(lambda: self._setFocusedObjectWidget(tile))
+        tile.focusEvent.connect(lambda give_focus: self._setFocusedObjectWidget(tile if give_focus else None))
         self.scene().addItem(tile)
         self.objectWidgets.append(tile)
 
@@ -492,8 +494,6 @@ class EditorGraphicsView(QtWidgets.QGraphicsView):  # MARK: Editor
                                  text=text,
                                  is_preview=self.is_preview)
 
-        text_widget.focusEvent.connect(
-            lambda: self._setFocusedObjectWidget(text_widget))
         self.scene().addItem(text_widget)
         self.objectWidgets.append(text_widget)
 

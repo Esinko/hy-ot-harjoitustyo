@@ -40,3 +40,4 @@ Kartan muokkausnäkymän idea:
 - Undo/redo -ominaisuus editoriin
 - Group select -ominaisuus editoriin
 - Objektilistaus
+- Asset deduplikaatio. Samat liittet voisi tunnistaa ja viitata vain yhteen kopioinnin sijaan.

@@ -87,7 +87,7 @@ class SelectView(View):
 
                 # Share button
                 share_button = ExportMapButton(
-                    24, placeholder_name=f"{option["text"]}.dmap")
+                    24, placeholder_name=f"{option['text']}.dmap")
                 share_button.selectPathEvent.connect(
                     lambda event: self._export_map(option, event))
 

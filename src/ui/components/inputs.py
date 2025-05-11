@@ -321,7 +321,7 @@ class ColorInputWidget(InputGroupWidget):
     def _choose_color(self):
         """Private method that opens the native OS provided color picker.
         """
-        color = QtWidgets.QColorDialog.getColor(
+        color = QtWidgets.QColorDialog(parent=self.parentWidget()).getColor(
             self.color, self.parentWidget())
         if color.isValid():
             self.color = color

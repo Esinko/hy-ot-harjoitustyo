@@ -83,7 +83,7 @@ class SelectView(View):
                 # Rename button
                 rename_button = RenameButtonWidget(24)
                 rename_button.clicked.connect(
-                    lambda: self.change_view("rename_map", (option["id"], "select_map")))
+                    lambda _, opt_id=option["id"]: self.change_view("rename_map", (opt_id, "select_map")))
 
                 # Share button
                 share_button = ExportMapButton(
@@ -94,7 +94,7 @@ class SelectView(View):
                 # Delete button
                 delete_button = DeleteButtonWidget(24)
                 delete_button.clicked.connect(
-                    lambda: self.change_view("delete_map", option["id"]))
+                    lambda _, opt_id=option["id"]: self.change_view("delete_map", opt_id))
 
                 option_row.addWidget(option_button)
                 option_row.addWidget(rename_button)

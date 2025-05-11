@@ -287,8 +287,8 @@ class Map:  # MARK: Map
                                   element_editable["width"],
                                   element_editable["height"],
                                   element_editable["rotation"],
-                                  None if not element_editable["background_image"] else (
-                                      element_editable["id"] if not new_asset else new_asset.id
+                                  None if not element_editable["background_image"] and not new_asset else (
+                                      element_editable["background_image"]["id"] if not new_asset else new_asset.id
                       ),
             element_editable["background_color"],
             element_id))

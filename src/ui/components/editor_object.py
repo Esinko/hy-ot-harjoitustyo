@@ -8,14 +8,16 @@ class EditorObject(QtCore.QObject, QtWidgets.QGraphicsRectItem):
     Attributes:
         focusEvent (QSignal): Signal when an object wants to gain focus.
         type (str): Object type (often element or text)
-        id (int): Unique id usually from the DB
-        edit_circle_radius (32): Hardcoded edit circle size
+        id (int): Unique id usually from the DB.
+        edit_circle_radius (32): Hardcoded edit circle size.
+        focused (bool): If this object thinks it is in focus
     """
     focusEvent = QtCore.Signal(bool)
     focused: bool = False
     type: str = "any"
     id: int
     edit_circle_radius: int = 32
+    focused: bool = False
 
     def __init__(self, *args, object_id: int, type: str, **kwargs):
         QtCore.QObject.__init__(self)
@@ -36,7 +38,7 @@ class EditorObject(QtCore.QObject, QtWidgets.QGraphicsRectItem):
         super().paint(painter, option, widget)
         self.setZValue(1)
 
-        if self.hasFocus():
+        if self.focused:
             # Draw draggable circle in center
             center = self.rect().center()
             fill = QtGui.QColor("#FFFFFF")
@@ -60,20 +62,23 @@ class EditorObject(QtCore.QObject, QtWidgets.QGraphicsRectItem):
         if QtWidgets.QApplication.mouseButtons() == QtCore.Qt.MouseButton.RightButton:
             if event.reason() == QtCore.Qt.FocusReason.MouseFocusReason:
                 self.focusEvent.emit(True)
+                self.focused = True
 
         # Forced focus
         if event.reason() == QtCore.Qt.FocusReason.NoFocusReason:
             self.focusEvent.emit(True)
+            self.focused = True
 
         super().focusInEvent(event)
 
     # Handle focus out
     def focusOutEvent(self, event: QtGui.QFocusEvent):
         # Do not allow popups to steal focus
-        if event.reason() != QtCore.Qt.FocusReason.PopupFocusReason and QtWidgets.QApplication.focusWidget().__class__.__name__ == "EditorGraphicsView":
-            self.focusEvent.emit(False)
-            self.focused = False
-
+        if QtWidgets.QApplication.focusWidget().__class__.__name__ == "EditorGraphicsView":
+            if event.reason() != QtCore.Qt.FocusReason.PopupFocusReason:
+                self.focusEvent.emit(False)
+                self.focused = False
+            
         super().focusOutEvent(event)
 
     # Handle dragging to other position

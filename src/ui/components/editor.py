@@ -245,7 +245,8 @@ class EditorGraphicsView(QtWidgets.QGraphicsView):  # MARK: Editor
             is_preview (bool): Enable/disable preview mode
         """
         self.is_preview = is_preview
-        self.viewport().update()
+        self.render(self.objects) # Updates labels
+        self.viewport().update() # Updates editor
 
     def _getAdjustedCoordinate(self, coordinate: int | float):
         """Get the adjusted 1/256 coordinates.
@@ -287,7 +288,7 @@ class EditorGraphicsView(QtWidgets.QGraphicsView):  # MARK: Editor
         self.scale(factor, factor)
         self.scale_factor = new_scale
 
-    def keyPressEvent(self, event: QtGui.QKeyEvent):
+    def keyPressEvent(self, event: QtGui.QKeyEvent): # MARK: Keyboard
         if event.key() == QtCore.Qt.Key_Escape:
             # Remove focus with ESC
             self._setFocusedObjectWidget(None)
@@ -306,6 +307,10 @@ class EditorGraphicsView(QtWidgets.QGraphicsView):  # MARK: Editor
                 self.pasteElementEvent.emit(self.clipboard)
             else:
                 print("ERROR: Cannot copy unsupported object!")
+            
+            # Return focus
+            if self.focusedObjectWidget and isValid(self.focusedObjectWidget):
+                self.focusedObjectWidget.setFocus(QtCore.Qt.FocusReason.NoFocusReason)
         elif event.key() == QtCore.Qt.Key_Delete and self.focusedObject:
             if isinstance(self.focusedObject, MapText):
                 self.removeTextEvent.emit(self.focusedObject.id)

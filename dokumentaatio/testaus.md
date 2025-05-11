@@ -11,7 +11,7 @@ Testiluokassa on automaattinen `tearDown`-metodi, joka poistaa testeissä käyte
 Varsinaisesta sisällön muokaamisesta vastaavaa `Map`-luokkaa testaataan `TestMap`-testiluokalla. Tämäkin testiluokka hyödyntää väliaikaisia tiedostoja levyllä. Testeissä käydään läpi keskeisemmät ominaisuudet, kuten elementtien listaus, luonti ja poistaminen. Lisäksi testataan erikseen `Asset`-olioiden luonti (kuvaavat liitteitä, kuten taustakuvia)
 
 **Testikattavuus**
-Ilman käyttöliittymätestejä, sovelluksen testauksen haaraumakattavuus on `73 %`.
+Ilman käyttöliittymätestejä, sovelluksen testauksen haaraumakattavuus on `76 %`.
 ![coverage](./testaus-kuvat/coverage.png)
 
 Testaamatta jäivät laajalti elementtien muokkaaminen.

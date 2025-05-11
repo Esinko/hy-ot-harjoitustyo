@@ -1,5 +1,6 @@
 from map_store.store import MapStore
 from pathlib import Path
+from os.path import join
 import shutil
 import unittest
 from uuid import uuid4
@@ -46,6 +47,21 @@ class TestMapStore(unittest.TestCase):
         got_map = self.store.get(map.map_file.name)
         self.assertEqual(map.map_file.name, got_map.map_file.name)
 
+    def test_export(self):
+        map = self.store.create_map("secret-name", "test-map")
+        self.store.export(map, join(self.test_path, "./secret-name.dmap"))
+        self.assertEqual(Path(join(self.test_path, "./secret-name.dmap")).exists(), True)
+
+    def test_import(self):
+        print([map.name for map in self.store.list()])
+        map = self.store.create_map("secret-name", "test-map")
+        Path(join(self.test_path, "./dummy/")).mkdir()
+        file_path = join(self.test_path, "./dummy/secret-name.dmap")
+        self.store.export(map, file_path)
+        self.store.add(file_path)
+        print([map.name for map in self.store.list()])
+        self.assertEqual(len(self.store.list()), 2)
+
     def test_list_no_refresh(self):
         # Create will be detected, delete not (cache must refresh on create only)
         created_map = self.store.create_map("secret-name", "test-map")
@@ -61,7 +77,7 @@ class TestMapStore(unittest.TestCase):
         list = self.store.list()
         self.assertEqual(len(list), 0)
 
-    def test_add_element(self):
+    def test_get_elements(self):
         map = self.store.create_map("secret-name", "test-map")
         element_dict = {
             "name": "Test tile",
@@ -70,15 +86,35 @@ class TestMapStore(unittest.TestCase):
             "width": 1,
             "height": 1
         }
+        self.assertEqual(len(map.get_elements()), 0)
+        map.create_element(element_dict)
+        self.assertEqual(len(map.get_elements()), 1)
+
+    def test_add_element_properties(self):
+        map = self.store.create_map("secret-name", "test-map")
+        image_data = Path("./src/tests/sample_image.jpg").read_bytes()
+        element_dict = {
+            "name": "Test tile",
+            "x": 0,
+            "y": 0,
+            "width": 1,
+            "height": 1,
+            "background_image": {
+                "name": "test",
+                "data": list(image_data)
+            }
+        }
         element = map.create_element(element_dict)
         elements = map.get_elements()
         self.assertEqual(elements[0].id, element.id)
-        self.assertEqual(elements[0].name, element.name)
-        self.assertEqual(elements[0].x, elements[0].y)
+        self.assertEqual(elements[0].name, element_dict["name"])
         self.assertEqual(elements[0].x, 0)
-        self.assertEqual(elements[0].width, elements[0].height)
+        self.assertEqual(elements[0].y, 0)
+        self.assertEqual(elements[0].width, 1)
         self.assertEqual(elements[0].width, 1)
         self.assertEqual(len(elements), 1)
+        self.assertEqual(elements[0].background_image.data, image_data)
+        self.assertEqual(elements[0].background_image.name, element_dict["background_image"]["name"])
 
     def test_remove_element(self):
         map = self.store.create_map("secret-name", "test-map")
@@ -94,7 +130,7 @@ class TestMapStore(unittest.TestCase):
         elements = map.get_elements()
         self.assertEqual(len(elements), 0)
 
-    def test_add_text(self):
+    def test_add_text_properties(self):
         map = self.store.create_map("secret-name", "test-map")
         text_name = "test-text"
         text_value = "foo bar"

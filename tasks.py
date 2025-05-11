@@ -1,6 +1,6 @@
 from invoke import task
 from sys import platform
-from subprocess import call, check_output
+from subprocess import call
 
 @task
 def coverage(ctx):

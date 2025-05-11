@@ -18,7 +18,7 @@ Elementin asetuksien muokkauspaneli aukeaa editorin oikealle puolelle. Voit sulk
 - [Changelog](./dokumentaatio/changelog.md)
 - [Arkkitehtuuri](./dokumentaatio/arkkitehtuuri.md)
 - [Testausdokumentti](./dokumentaatio/testaus.md)
-- [Release 2](https://github.com/Esinko/hy-ot-harjoitustyo/releases/tag/viikko6)
+- [Loppupalautus (Release)](https://github.com/Esinko/hy-ot-harjoitustyo/releases/tag/loppupalautus)
 
 ## Projektista
 Sovelluksen tarvitsema Python versio ja tiedot riippuvuuksista löytyvät `pyproject.toml`-tiedostosta.
